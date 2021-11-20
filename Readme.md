@@ -2,11 +2,11 @@
 
 1. run the backend
    - cd backend
-   - npm install
+   - (npm install)
    - npm run dev
 2. run the frontend
    - cd frontend
-   - npm install
+   - (npm install)
    - npm run dev
 
 
