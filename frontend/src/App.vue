@@ -1,14 +1,38 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import { reactive } from "vue";
+import { reactive, ref, onMounted, watch } from "vue";
 
-import UserPanel, { Properties as UserProperties } from "./components/UserPanel.vue";
+import UserPanel, {
+  Properties as UserProperties,
+} from "./components/UserPanel.vue";
 
-const users: UserProperties[] = reactive();
+const username = ref('')
+
+watch(username, (newUsername, oldUsername) => {
+fetch(`/api/users?usernameStartsWith=${encodeURIComponent(newUsername)}`)
+  .then((response) => response.json())
+  .then((result) => users.splice(0, users.length, ...result));
+})
+
+const users: UserProperties[] = reactive([]);
+
+const load = () => fetch("/api/users")
+  .then((response) => response.json())
+  .then((result) => users.splice(0, users.length, ...result));
+
+onMounted(load)
+
 </script>
 
 <template>
+  <div>
+    <input type="search" v-model="username">
+    <div>Du suchst nach {{ username }}</div>
+  </div>
+
+  <button @click="load()">User laden</button>
+
   <div class="user-list">
     <user-panel
       v-for="user in users"
