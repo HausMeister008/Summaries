@@ -5,20 +5,34 @@ import { Pool } from "pg";
 
 const app = express();
 
-app.get("/api/users", (req, res) => {
-  const { usernameStartsWith } = req.query
+
+const pool = new Pool({
+  host: 'localhost',
+  user: 'leongrass',
+  database: 'summaries',
+  password: 'w1rch4tt3npr1v4t',
+  port: 5432,
+})
+
+app.get("/api/users", async (req, res) => {
+  var { usernameStartsWith } = req.query
+  usernameStartsWith = usernameStartsWith ?? ''
   console.log('usernameStartsWith', usernameStartsWith)
+  var db_res = await pool.query(    `select * from "user" where lower(firstname) like lower('${usernameStartsWith}%') or lower(name) like lower('${usernameStartsWith}%')`)
+  // var db_res = await pool.query('select * from "user";')
+  var db_rows = db_res.rows
+  var res_json:Array<Object> = []
+  db_rows.forEach(row=>{
+    res_json.push({
+      name: row.firstname + " " + row.name,
+      nSummaries: 0,
+      avatar: row.avatar ?? undefined
+    })
+  })
+  console.log(res_json)
   res
     .status(200)
-    .json([
-      {
-        name: "León Grass",
-        nSummaries: 1,
-        avatar: "/src/assets/images/headphones.jpg",
-      },
-      { name: "Timo Stolz", nSummaries: 0 },
-      { name: "Tina", nSummaries: 0 }
-    ]);
+    .json(res_json);
 });
 
 const server = app.listen(8080, () => {

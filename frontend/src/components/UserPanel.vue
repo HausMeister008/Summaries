@@ -13,7 +13,7 @@ const props = defineProps<Properties>();
 <template>
   <div class="user_panel">
     <img
-      :src = "props.avatar ?? '/src/assets/images/headphones2.jpg'"
+      :src = "props.avatar ? '/src/assets/images/'+props.avatar : '/src/assets/images/headphones.jpg'"
       alt="profile picture"
       class="profile_image"
     />
@@ -23,14 +23,21 @@ const props = defineProps<Properties>();
 </template>
 
 <style>
+.user_panel:first-child{
+  margin-top: 2rem;
+}
+.user_panel:last-child{
+  margin-bottom: 5rem;
+}
 .user_panel{
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
     height: 100px;
-    width: 90vw;
-    background: rgb(255, 255, 255);
+    width: 90%;
+    margin-left: 5%;
+    background: white;
     box-shadow: 0 0 15px #ccc;
     padding: 0 2rem 0 0;
     border-radius: 5px;
@@ -45,10 +52,10 @@ const props = defineProps<Properties>();
     transform: scale(1.01);
     box-shadow: 0 0 15px #bbb;
     cursor: pointer;
+    z-index: 8;
 }
 
 .profile_image{
-    height: 100px;
-    max-width: 150px;
+    width: 150px;
 }
 </style>
