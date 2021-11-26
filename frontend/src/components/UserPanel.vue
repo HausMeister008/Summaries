@@ -4,6 +4,7 @@ import { defineProps } from 'vue'
 export interface Properties {
     name: string,
     nSummaries: number,
+    ID: number,
     avatar?: string
 }
 
@@ -11,7 +12,7 @@ const props = defineProps<Properties>();
 </script>
 
 <template>
-  <div class="user_panel">
+  <router-link :to="{name: 'UserDetails', params:{id:props.ID.toString(), name:props.name}}" class="user_panel">
     <img
       :src = "props.avatar ? '/src/assets/images/'+props.avatar : '/src/assets/images/headphones.jpg'"
       alt="profile picture"
@@ -19,7 +20,8 @@ const props = defineProps<Properties>();
     />
     <div class="user_name"><p>{{ props.name }}</p></div>
     <div class="amount_summaries">Zusammenfassungen: {{ props.nSummaries }}</div>
-  </div>
+    <div class="amount_summaries">ID: {{ props.ID }}</div>
+  </router-link>
 </template>
 
 <style>
@@ -30,6 +32,8 @@ const props = defineProps<Properties>();
   margin-bottom: 5rem;
 }
 .user_panel{
+    text-decoration:none;
+    color: var(--base);
     display: flex;
     justify-content: space-between;
     align-items: center;

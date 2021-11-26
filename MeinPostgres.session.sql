@@ -9,17 +9,19 @@ create user leongrass password 'w1rch4tt3npr1v4t';
 grant all privileges on database summaries to leongrass;
 
 -- @block createTables
-create table "user"(
-    mail varchar primary key not null,
+create table "users"(
+    id serial primary key not null,
     firstName varchar not null, 
-    name varchar);
+    name varchar,
+    avatar varchar
+    );
 
 
 create table "creator"(
     id serial primary key not null, 
-    "User" varchar not null, 
+    userID int not null, 
     SAmount int,
-    foreign key ("User") references "user" (mail) on delete cascade on update cascade
+    foreign key (userID) references users (id) on delete cascade on update cascade
     );
 
 create table "summaries"(
@@ -34,21 +36,21 @@ create table "summaries"(
 create table ratings(
     id serial primary key not null, 
     ratedSummary int not null, 
-    rating int not null default 5,
+    rating float not null default 5.0,
     foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade
     );
 
 create table SAccess(
     id serial primary key not null,
     Summary int not null,
-    userMail varchar not null,
+    userID int not null,
     foreign key (Summary) references summaries (id) on delete cascade on update cascade,
-    foreign key (userMail) references "user" (mail) on delete cascade on update cascade
+    foreign key (userID) references users (id) on delete cascade on update cascade
 );
 
-insert into "user" (mail, firstName, name) values ('leon.grass@gmx.net', 'Leon', 'Grass');
-insert into "user" (mail, firstName, name) values ('bothurpirmin@gmail.com', 'Pirmin', 'Bothur');
-insert into creator ("User", SAmount) values ('leon.grass@gmx.net',0);
+insert into users (firstName, name) values ('Leon', 'Grass');
+insert into users (firstName, name) values ('Pirmin', 'Bothur');
+insert into creator (userID, SAmount) values (1,0);
 insert into summaries (Creator, sumname, "Subject") values(1, 'firstsummaryever.pdf', 'Informatics');
 insert into ratings (ratedSummary, rating) values (1, 5);
-insert into SAccess (Summary, userMail) values (1, 'bothurpirmin@gmail.com');
+insert into saccess (Summary, userID) values (1, 2);
