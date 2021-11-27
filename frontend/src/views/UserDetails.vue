@@ -1,3 +1,5 @@
+<script setup lang="ts">
+</script>
 <template>
     <div class="user_detail_panel" v-if="usersums">
         <div class="userinfo">
@@ -10,29 +12,29 @@
         </div>
         <div class="user_sum" v-for="sum in usersums">
             <p>{{ sum.Subject }}</p>
-            <div :class="'rat'+sum.rating.toString() + ' sumrating'">
+            <div :class="'rat' + sum.rating.toString() + ' sumrating'">
                 <div class="rating">{{ sum.rating }}</div>
                 <svg id="rating_svg" :style="userStyle">
-                    <circle cx="1rem" cy ="1rem" r="1rem"></circle>
-                    <circle cx="1rem" cy ="1rem" r="1rem"></circle>
+                    <circle cx="1rem" cy="1rem" r="1rem" />
+                    <circle cx="1rem" cy="1rem" r="1rem" />
                 </svg>
             </div>
             <p>{{ sum.sumname }}</p>
-            <p>{{ sum.Date.date }} - {{sum.Date.time}}</p>
+            <p>{{ sum.Date.date }} - {{ sum.Date.time }}</p>
         </div>
     </div>
 </template>
 <script lang="ts">
-interface summaries{
-    sumname:string,
+interface summaries {
+    sumname: string,
     Subject: string,
-    Date: {date:Date, time:Date},
-    rating:number
+    Date: { date: Date, time: Date },
+    rating: number
 }
 export default {
     data() {
         let usersums: Array<summaries> = []
-        let rating_num:number = 0
+        let rating_num: number = 0
         return {
             usersums,
             rating_num
@@ -46,24 +48,29 @@ export default {
         userName(): string {
             return this.$route.params.name
         },
-        userStyle():{'--rating_num': number}{
-            return{
+        userStyle(): { '--rating_num': number } {
+            return {
                 '--rating_num': this.rating_num
             }
         }
     },
+    methods: {
+        async initData() {
+            const response = await fetch(`/api/userdetails/${this.$route.params.id}`)
+            this.usersums = await response.json()
+            this.usersums.forEach((sum) => {
+                var dt = new Date(sum.Date)
+                sum.Date = {
+                    date: dt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' }),
+                    time: dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' }),
+                }
+            })
+            this.rating_num = this.usersums[0].rating
+        }
+    },
     async created() {
-        const response = await fetch(`/api/userdetails/${this.$route.params.id}`)
-        this.usersums = await response.json()
-        this.usersums.forEach((sum) => {
-            var dt = new Date(sum.Date)
-            sum.Date = {
-                date: dt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' }),
-                time: dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' }),
-            }
-        })
-        this.rating_num = this.usersums[0].rating
-        console.log(this.rating_num)
+        this.initData();
+        this.$watch(() => this.$route.params, async () => this.initData)
     }
 }
 // import { reactive, ref, onMounted, watch } from "vue";
@@ -107,7 +114,7 @@ export default {
     width: 150px;
 }
 .user_sum {
-    text-decoration:none;
+    text-decoration: none;
     color: var(--base);
     display: flex;
     justify-content: space-around;
@@ -126,56 +133,58 @@ export default {
     font-size: 1.1rem;
     margin-top: 1rem;
 }
-.user_sum:hover{
+.user_sum:hover {
     transform: scale(1.01);
     box-shadow: 0 0 15px #bbb;
     cursor: pointer;
     z-index: 8;
 }
-.sumrating{
+.sumrating {
     width: 3rem;
     height: 3rem;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.rating{
+.rating {
     display: flex;
     justify-content: center;
     align-items: center;
     position: absolute;
     width: 1.5rem;
     height: 1.5rem;
-    font-size: .9rem;
+    font-size: 0.9rem;
     background-color: transparent;
     border: none;
     border-radius: 50%;
     z-index: 2;
-    }
-#rating_svg{
+}
+#rating_svg {
     position: relative;
     width: 2.3rem;
     height: 2.3rem;
     z-index: 1;
 }
-#rating_svg circle{
+#rating_svg circle {
     /* --rating_num:4.3; */
     width: 2.1rem;
     height: 2.1rem;
     fill: none;
-    stroke-width: .2rem;
+    stroke-width: 0.2rem;
     stroke: #000;
     transform-origin: center;
-    transform: translate(.15rem, -.15rem) rotateZ(-90deg);
+    transform: translate(0.15rem, -0.15rem) rotateZ(-90deg);
     stroke-dasharray: 6.25rem;
     stroke-dashoffset: 6.25rem;
 }
-#rating_svg circle:nth-child(1){
+#rating_svg circle:nth-child(1) {
     stroke: #f3f3f3;
     stroke-dashoffset: 0;
 }
-#rating_svg circle:nth-child(2){
+#rating_svg circle:nth-child(2) {
     stroke: #23cf00;
-    stroke-dashoffset: calc(6.25rem - (6.25rem * calc(100 * (var(--rating_num)) / 5) / 100));
+    stroke-dashoffset: calc(
+        6.25rem - (6.25rem * calc(100 * (var(--rating_num)) / 5) / 100)
+    );
 }
 </style>

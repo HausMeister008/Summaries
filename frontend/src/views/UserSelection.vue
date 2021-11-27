@@ -11,15 +11,15 @@ const username = ref('')
 
 
 watch(username, (newUsername, oldUsername) => {
-  fetch(`/api/users?usernameStartsWith=${encodeURIComponent(newUsername)}`)
-    .then((response) => response.json())
-    .then((result) => users.splice(0, users.length, ...result));
+    fetch(`/api/users?usernameStartsWith=${encodeURIComponent(newUsername)}`)
+        .then((response) => response.json())
+        .then((result) => users.splice(0, users.length, ...result));
 })
 
 
 const load = () => fetch("/api/users")
-  .then((response) => response.json())
-  .then((result) => users.splice(0, users.length, ...result));
+    .then((response) => response.json())
+    .then((result) => users.splice(0, users.length, ...result));
 
 onMounted(load)
 </script>
@@ -36,22 +36,28 @@ onMounted(load)
             v-for="user in users"
             :name="user.name"
             :n-summaries="user.nSummaries"
-            :ID = "user.ID"
+            :ID="user.ID"
             :avatar="user.avatar"
-        >
-        </user-panel>
+        ></user-panel>
+        <div class="none_found" v-if="users.length == 0">
+            <h2>Keine Ergebnisse!</h2>
+        </div>
     </div>
 </template>
 
 <style scoped>
 .user_list {
     width: 100%;
-    max-height: 100%;
+    height: 100%;
     margin-top: calc(var(--search_height) + var(--nav_height));
     background: white;
     box-shadow: inset 0 15px 15px -15px #eee;
     overflow: auto;
     scrollbar-width: thin;
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    flex-direction: column;
     z-index: 8;
 }
 .user_list::-webkit-scrollbar {
@@ -104,5 +110,11 @@ onMounted(load)
     top: 0.5rem;
     font-size: 0.9rem;
     color: #000;
+}
+.none_found{
+    margin-top: 2rem;
+    padding: .5rem 1rem;
+    box-shadow: 0 0 15px #ccc;
+    border-radius: 5px;
 }
 </style>

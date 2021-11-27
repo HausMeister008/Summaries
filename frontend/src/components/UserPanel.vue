@@ -20,7 +20,6 @@ const props = defineProps<Properties>();
     />
     <div class="user_name"><p>{{ props.name }}</p></div>
     <div class="amount_summaries">Zusammenfassungen: {{ props.nSummaries }}</div>
-    <div class="amount_summaries">ID: {{ props.ID }}</div>
   </router-link>
 </template>
 
@@ -58,7 +57,9 @@ const props = defineProps<Properties>();
     cursor: pointer;
     z-index: 8;
 }
-
+.user_name{
+  font-size: 1.2em;
+}
 .profile_image{
     width: 150px;
 }

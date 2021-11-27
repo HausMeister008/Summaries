@@ -47,7 +47,7 @@
 }
 .router_link{
   padding: .5rem 1.5rem;
-  color: black;
+  color: var(--base);
   position: relative;
   overflow: hidden;
   transform-origin: left;
@@ -77,7 +77,7 @@
 }
 .router-link-active::before {
     border-radius: 5px;
-    background: black;
+    background: var(--base);
     transform: translateX(0);
 }
 #logosvg {

@@ -1,6 +1,5 @@
 import express from "express";
 import { Pool } from "pg";
-
 // https://node-postgres.com/
 
 const app = express();
@@ -18,15 +17,15 @@ app.get("/api/users", async (req, res) => {
   var { usernameStartsWith } = req.query
   usernameStartsWith = usernameStartsWith ?? ''
   var db_res = await pool.query(
-    `select users.id as "UserID", firstname, name, count(summaries.id) as "nSummaries", avatar, avg(ratings.rating) as "avgrating"
-    from users, creator, summaries, ratings
+    `select users.id as "UserID", users.firstname, users.name, samount, avatar
+    from users, creator
     where
     users.id = creator.userID
-    and creator.id = summaries.creator 
-    and ratings.ratedSummary = summaries.id
-    and (lower(firstname) like lower('${usernameStartsWith}%') or lower(name) like lower('${usernameStartsWith}%'))
-    group by users.id
-    order by "avgrating" DESC
+    and (
+      lower(firstname) like lower('${usernameStartsWith}%') 
+      or lower(name) like lower('${usernameStartsWith}%')
+      or lower(concat(firstname, ' ' , name)) like lower('${usernameStartsWith}%'))
+    group by users.id, samount
     `
   )
 
@@ -37,13 +36,11 @@ app.get("/api/users", async (req, res) => {
     // console.log(row.mail)
     res_json.push({
       ID: row.UserID,
-      name: row.firstname + " " + row.name,
-      nSummaries: parseInt(row.nSummaries),
-      avatar: row.avatar ?? undefined,
-      rating: parseFloat(row.avgrating).toPrecision(2)
+      name: row.firstname+ " " + row.name,
+      nSummaries: parseInt(row.samount),
+      avatar: row.avatar ?? undefined
     })
   })
-  console.log(res_json)
   res
     .status(200)
     .json(res_json);
