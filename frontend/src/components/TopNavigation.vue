@@ -25,7 +25,7 @@
     <div id="nav">
         <router-link class="router_link" to="/">Home</router-link>
         <router-link class="router_link" to="/login">Login</router-link>
-        <router-link class="router_link" to="/selection">Selection</router-link>
+        <router-link class="router_link" to="/selection">Auswahl</router-link>
     </div>
 </template>
 <style scoped>

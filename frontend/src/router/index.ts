@@ -20,7 +20,8 @@ const routes =[
     {
         path: '/user/:id/:name',
         name: 'UserDetails',
-        component: ()=>import('../views/UserDetails.vue')
+        component: ()=>import('../views/UserDetails.vue'),
+        props: true
     }
 ]
 

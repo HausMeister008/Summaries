@@ -40,13 +40,16 @@ export default {
             rating_num
         }
     },
+    props:{
+        id: {type:Number, required :true},
+        name: {type:String, required :true}
+    },
     computed: {
-        userID(): number {
-            const id: number = this.$route.params.id
-            return id
+        userID():Number{
+            return this.id
         },
         userName(): string {
-            return this.$route.params.name
+            return this.name
         },
         userStyle(): { '--rating_num': number } {
             return {
@@ -56,7 +59,7 @@ export default {
     },
     methods: {
         async initData() {
-            const response = await fetch(`/api/userdetails/${this.$route.params.id}`)
+            const response = await fetch(`/api/userdetails/${this.id}`)
             this.usersums = await response.json()
             this.usersums.forEach((sum) => {
                 var dt = new Date(sum.Date)
