@@ -1,16 +1,16 @@
 <script setup lang="ts">
-</script>
+           </script>
 <template>
-    <div class="user_detail_panel" v-if="usersums">
-        <div class="userinfo">
-            <!-- <img
+    <div class="userinfo">
+        <!-- <img
                 :src="usersums.avatar ? '/src/assets/images/' + usersums.avatar : '/src/assets/images/headphones.jpg'"
                 alt="profile picture"
                 class="profile_image"
-            />-->
-            <h1 id="username_hdln">{{ userName }}</h1>
-        </div>
-        <div class="user_sum" v-for="sum in usersums">
+        />-->
+        <h1 id="username_hdln">{{ userName }}</h1>
+    </div>
+    <div class="user_detail_panel">
+        <div class="user_sum" v-if="usersums.length > 0" v-for="sum in usersums">
             <p>{{ sum.Subject }}</p>
             <div :class="'rat' + sum.rating.toString() + ' sumrating'">
                 <div class="rating">{{ sum.rating }}</div>
@@ -21,6 +21,9 @@
             </div>
             <p>{{ sum.sumname }}</p>
             <p>{{ sum.Date.date }} - {{ sum.Date.time }}</p>
+        </div>
+        <div v-else class="no_sums">
+            <h2 class="no_sums_hdln">No summaries found for this user</h2>
         </div>
     </div>
 </template>
@@ -40,12 +43,12 @@ export default {
             rating_num
         }
     },
-    props:{
-        id: {type:Number, required :true},
-        name: {type:String, required :true}
+    props: {
+        id: { type: Number, required: true },
+        name: { type: String, required: true }
     },
     computed: {
-        userID():Number{
+        userID(): Number {
             return this.id
         },
         userName(): string {
@@ -92,6 +95,9 @@ export default {
 // }
 </script>
 <style>
+#username_hdln{
+    color: var(--base);
+}
 .user_detail_panel {
     position: relative;
     margin-top: var(--nav_height);
@@ -111,7 +117,7 @@ export default {
     align-items: center;
     border-radius: 5px;
     overflow: hidden;
-    background: white;
+    background: var(--anti_base);
 }
 .profile_image {
     width: 150px;
@@ -126,19 +132,19 @@ export default {
     height: 100px;
     width: 90%;
     margin-left: 5%;
-    background: white;
-    box-shadow: 0 0 15px #ccc;
+    background: var(--anti_base);
+    box-shadow: 0 0 15px var(--box_shadows);
     padding: 0 2rem 0 0;
     border-radius: 5px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition:background 1s, color 1s, transform 0.2s, box-shadow 0.2s;
     font-weight: 800;
     font-size: 1.1rem;
     margin-top: 1rem;
 }
 .user_sum:hover {
     transform: scale(1.01);
-    box-shadow: 0 0 15px #bbb;
+    box-shadow: 0 0 15px var(--box_shadows_dark);
     cursor: pointer;
     z-index: 8;
 }
@@ -174,7 +180,7 @@ export default {
     height: 2.1rem;
     fill: none;
     stroke-width: 0.2rem;
-    stroke: #000;
+    stroke: var(--base);
     transform-origin: center;
     transform: translate(0.15rem, -0.15rem) rotateZ(-90deg);
     stroke-dasharray: 6.25rem;

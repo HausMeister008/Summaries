@@ -11,8 +11,10 @@ grant all privileges on database summaries to leongrass;
 -- @block createTables
 create table "users"(
     id serial primary key not null,
+    username varchar not null,
     firstName varchar not null, 
-    name varchar,
+    lastname varchar,
+    pwd varchar not null,
     avatar varchar
     );
 
@@ -47,10 +49,32 @@ create table SAccess(
     foreign key (Summary) references summaries (id) on delete cascade on update cascade,
     foreign key (userID) references users (id) on delete cascade on update cascade
 );
+create table locations(
+    plz varchar primary key not null,
+    location_name varchar not null
+);
 
-insert into users (firstName, name) values ('Leon', 'Grass');
-insert into users (firstName, name) values ('Pirmin', 'Bothur');
+create table schools(
+    id serial primary key not null,
+    school_name varchar,
+    school_plz varchar,
+    foreign key (school_plz) references locations (plz) on delete cascade on update cascade
+);
+
+create table subjects(
+    id serial primary key not null,
+    subject_name varchar not null,
+    subject_school int,
+    subject_year int,
+    foreign key (subject_school) references schools (id) on delete cascade on update cascade
+);
+
+insert into users (firstname, lastname,username, pwd) values ('Leon', 'Grass', 'LeonG','');
+insert into users (firstname, lastname,username, pwd) values ('Pirmin', 'Bothur', 'PirminB','');
 insert into creator (userID, SAmount) values (1,0);
-insert into summaries (Creator, sumname, "Subject") values(1, 'firstsummaryever.pdf', 'Informatics');
+insert into summaries (Creator, sumname, "Subject") values(1, 'firstsummaryever.pdf', 'Informatik');
 insert into ratings (ratedSummary, rating) values (1, 5);
 insert into saccess (Summary, userID) values (1, 2);
+insert into locations (plz, location_name) values('79576', 'Weil am Rhein');
+insert into schools (school_name, school_plz) values ('Kant-Gymnasium', '79576');
+insert into subjects (subject_name, subject_school, subject_year) values ('Informatik', 1, 11);

@@ -48,10 +48,10 @@ onMounted(load)
 <style scoped>
 .user_list {
     width: 100%;
-    height: 100%;
+    height: 100vh;
     margin-top: calc(var(--search_height) + var(--nav_height));
-    background: white;
-    box-shadow: inset 0 15px 15px -15px #eee;
+    background: var(--anti_base);
+    box-shadow: inset 0 15px 15px -15px var(--box_shadows_dark);
     overflow: auto;
     scrollbar-width: thin;
     display: flex;
@@ -64,7 +64,7 @@ onMounted(load)
     width: 0.5rem;
 }
 .user_list::-webkit-scrollbar-thumb {
-    background-color: #ccc;
+    background-color: var(--box_shadows);
     border-radius: 5px;
 }
 #search {
@@ -73,7 +73,8 @@ onMounted(load)
     padding: 0 15vw;
     position: absolute;
     top: var(--nav_height);
-    background: #fff;
+    background: var(--anti_base);
+    color: var(--base);
 }
 
 #search * {
@@ -95,26 +96,28 @@ onMounted(load)
 }
 #searchBar:focus,
 #searchBar:valid {
-    border-bottom-color: #444;
+    border-bottom-color: var(--base);
 }
 #searchBarLabel {
     position: absolute;
     color: #888;
     left: calc(15vw + 1rem);
     top: 1.5rem;
-    transition: top 0.2s, font-size 0.2s, color 0.2s;
+    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity .2s;
     z-index: 11;
 }
 #searchBar:focus ~ #searchBarLabel,
 #searchBar:valid ~ #searchBarLabel {
     top: 0.5rem;
     font-size: 0.9rem;
-    color: #000;
+    color: var(--base);
+    opacity: .5;
 }
 .none_found{
+    color: var(--base);
     margin-top: 2rem;
     padding: .5rem 1rem;
-    box-shadow: 0 0 15px #ccc;
+    box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
 }
 </style>

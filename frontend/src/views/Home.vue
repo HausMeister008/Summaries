@@ -44,6 +44,8 @@
     min-height: 100vh;
     overflow: auto;
     scrollbar-width: thin;
+    color: var(--base);
+    background: var(--anti_base);
 }
 #welcome h1{
     text-align: center;
@@ -55,7 +57,7 @@
     min-width: min-content;
     margin-top: 5rem;
     border-radius: 5px;
-    box-shadow: 0 0 15px #ccc;
+    box-shadow: 0 0 15px var(--box_shadows);
     padding: 2rem;
     text-align: center;
     font-size: 1.2rem;
