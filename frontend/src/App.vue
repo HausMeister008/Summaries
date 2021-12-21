@@ -21,7 +21,6 @@ const display_mode = ref(localStorage.display_mode??'DarkMode')
 const display_values = ref('')
 function set_display_mode(mode:string){
   display_values.value = mode == 'LightMode' ? display_modes.light: display_modes.dark
-  console.log(mode, display_values.value)
   document.getElementById('app')?.setAttribute('style', display_values.value) 
 }
 function switch_display_mode() {

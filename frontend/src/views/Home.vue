@@ -26,7 +26,7 @@
             </p>
         </div>
         <div class="info_tag">
-            <h2>Für die Creators</h2>
+            <h2>Für die Creator</h2>
             <p class="explenations">
                 Ihr habt beim Hochladen die Möglichkeit, den Zugang zu euren Zusammenfassungen einzuschränken, sie also nur denjenigen zugänglich zu machen,
                 die ihr wollt. Wenn ihr zum Beispiel keinen Bock habt, eure 10 Seiten lange Geschichtszusammenfassung für einfach jeden kostenlos zugänglich zu machen,

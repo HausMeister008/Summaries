@@ -27,7 +27,7 @@ app.get("/api/users", async (req, res) => {
   var { usernameStartsWith } = req.query
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
-  const is_creator = verified_token[1]
+  // const is_creator = verified_token[1]
   usernameStartsWith = usernameStartsWith ?? ''
   // only the creators with at least one summary uploaded
   var db_res = await pool.query(
@@ -71,24 +71,33 @@ app.get('/api/userdetails/:id/:token', async (req, res) => {
     res.send({ success: false })
     return
   }
-  const details = await pool.query(
-    `select summaries.id, sumname, subject_name, subject_year, school_name, location_name,"Date", avg(rating) as "rating", count(rating) as "ratingamount"
-    from users, creator, summaries, ratings, subjects, schools, locations
-    where users.id = ${id}
-    and users.id = creator.userID
-    and creator.id = summaries.creator
-    and ratings.ratedSummary = summaries.id
-    and summaries.subject_id = subjects.id 
-    and subjects.subject_school = schools.id 
-    and schools.school_plz = locations.plz 
+  const details = await pool.query(`
+    select 
+      summaries.id, 
+      sumname,
+      subject_name,
+      subject_year,
+      school_name,
+      location_name,
+      "Date",
+      coalesce(avg(rating), 0) as "rating",
+      coalesce(count(rating), 0) as "ratingamount"
+    from
+      users
+      join creator on (users.id = creator.userID)
+      join summaries on (creator.id = summaries.creator)
+      left join ratings on (ratings.ratedSummary = summaries.id)
+      join subjects on (summaries.subject_id = subjects.id )
+      join schools on (subjects.subject_school = schools.id )
+      join locations on (schools.school_plz = locations.plz )
+    where users.id = $1
     group by summaries.id, subjects.subject_name, subjects.subject_year, schools.school_name,locations.location_name
-    `
+    `, [id]
   )
   const userinfo = details.rows
   details.rows.forEach(row => {
     row.rating = parseFloat(row.rating).toFixed(2)
   })
-  console.log(userinfo)
   res.json(userinfo)
 })
 
@@ -97,8 +106,8 @@ interface queryRetVal {
 }
 
 app.post('/api/register', async (req, res) => {
-  const default_avatars = ['headphones_small.jpg','study.jpg', 'studying_with_laptop.jpg']
-  const default_avatar = default_avatars[Math.floor(Math.random()*default_avatars.length)]
+  const default_avatars = ['headphones_small.jpg', 'study.jpg', 'studying_with_laptop.jpg']
+  const default_avatar = default_avatars[Math.floor(Math.random() * default_avatars.length)]
   const { username, pwd, firstname, lastname, creator_account } = req.body
   const hashed_pwd = await functions.hash_pwd(pwd)
   try {
@@ -141,43 +150,41 @@ app.post('/api/login', async (req, res) => {
   console.log(username, 'logged in')
 })
 
+interface UserDetails {
+  id: number,
+  username?: string,
+  firstname?: string,
+  lastname?: string,
+  avatar?: string,
+  avg_rating: number,
+  nSummaries: number,
+  is_creator: boolean
+}
 
 app.post('/api/userprofile', async (req, res) => {
   const { token } = req.body
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
-  const is_creator = verified_token[1]
+  const is_creator:boolean = typeof(verified_token[1]) === 'boolean'? verified_token[1]:false
 
-  const user_info_result = await pool.query(
-    `select id, username, firstname, lastname, avatar
-    from users
-    where users.username = '${sub}'
-    `
+  const creator_info_result = await functions.userProfileInfo(sub)
+
+  const creator_info_data: UserDetails = (
+    creator_info_result.length > 0 ?
+      creator_info_result[0] :
+      { id: 0, 
+        username: undefined, 
+        firstname: undefined, 
+        lastname: undefined, 
+        avatar: undefined, 
+        avg_rating: 0, 
+        nSummaries: 0, 
+        is_creator: false }
   )
-  const user_info_data = user_info_result.rows.length > 0 ? user_info_result.rows[0] : {}
-  if (is_creator) {
-    const creator_info_result = await pool.query(
-      `select avg(rating) as "avg_rating", count(summaries.id) as "nSummaries"
-      from users, creator, ratings, summaries
-      where users.username = '${sub}'
-      and users.id = creator.userid 
-      and creator.id = summaries.creator 
-      and summaries.id = ratings.ratedSummary
-      group by users.id, ratings.id, summaries.id
-      `
-    )
-    const creator_info_data = (
-      creator_info_result.rows.length > 0 ?
-        creator_info_result.rows[0] :
-        { avg_rating: null, nSummaries: 0 }
-    )
-    const ret_val = Object.assign(user_info_data, creator_info_data)
-    console.log(ret_val)
-    res.send(ret_val)
-  } else {
-    console.log(user_info_data)
-    res.send(user_info_data)
-  }
+  var ret_val = creator_info_data
+  ret_val.is_creator = is_creator
+  res.send(ret_val)
+
 })
 
 const port = 8080

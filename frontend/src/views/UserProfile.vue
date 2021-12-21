@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import { ref, onMounted,reactive } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 
 import UserProfile, {
     Properties as UserProfileProperties,
@@ -9,7 +9,7 @@ import UserProfile, {
 
 const user_info: UserProfileProperties[] = reactive([])
 
-async function get_user_data(){
+async function get_user_data() {
     var result = await fetch('/api/userprofile', {
         method: 'POST',
         headers: {
@@ -29,31 +29,41 @@ onMounted(get_user_data)
 </script>
 
 <template>
-    <user-profile class="user_profile_info"
-    v-if="user_info[0]"
-    :username="user_info[0].username"
-    :firstname= "user_info[0].firstname"
-    :lastname= "user_info[0].lastname"
-    :avg_rating= "user_info[0].avg_rating"
-    :nSummaries= "user_info[0].nSummaries"
-    :avatar = "user_info[0].avatar"
-    ></user-profile>
-    
+    <div class="userprofile">
+        <user-profile
+            class="user_profile_info"
+            v-if="user_info[0]"
+            :username="user_info[0].username"
+            :firstname="user_info[0].firstname"
+            :lastname="user_info[0].lastname"
+            :avg_rating="user_info[0].avg_rating"
+            :nSummaries="user_info[0].nSummaries"
+            :avatar="user_info[0].avatar"
+            :is_creator="user_info[0].is_creator"
+        ></user-profile>
+    </div>
 </template>
 
 <style scoped>
-    .user_profile_info{
-        color: var(--base);
-        background: var(--anti_base);
-        position:absolute;
-        top:var(--nav_height);
-        left: 0;
-        width: 100%;
-        height: calc(100vh - var(--nav_height));
-        text-align:center;
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        flex-direction:column;
-    }
+.userprofile{
+    position: relative;
+    margin-top: var(--nav_height);
+    width: 100%;
+    height: calc(100vh - var(--nav_height));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.user_profile_info {
+    color: var(--base);
+    background: var(--anti_base);
+    padding: 8rem;
+    position: relative;
+    text-align: center;
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    flex-direction: column;
+}
 </style>
