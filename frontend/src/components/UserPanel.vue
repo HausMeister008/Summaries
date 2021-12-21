@@ -12,7 +12,7 @@ const props = defineProps<Properties>();
 </script>
 
 <template>
-  <router-link :to="{name: 'UserDetails', params:{id:props.ID.toString(), name:props.name}}" class="user_panel">
+  <router-link :to="{name: 'UserDetails', params:{id:props.ID, name:props.name}}" class="user_panel">
     <img
       :src = "props.avatar ? '/src/assets/images/'+props.avatar : '/src/assets/images/headphones_small.jpg'"
       alt="profile picture"

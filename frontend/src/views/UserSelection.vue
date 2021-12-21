@@ -11,13 +11,13 @@ const username = ref('')
 
 
 watch(username, (newUsername, oldUsername) => {
-    fetch(`/api/users?usernameStartsWith=${encodeURIComponent(newUsername)}`)
+    fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}`)
         .then((response) => response.json())
         .then((result) => users.splice(0, users.length, ...result));
+
 })
 
-
-const load = () => fetch("/api/users")
+const load = () => fetch(`/api/users?token=${localStorage.token}`)
     .then((response) => response.json())
     .then((result) => users.splice(0, users.length, ...result));
 
@@ -80,6 +80,8 @@ onMounted(load)
 #search * {
     font-size: 1.1rem;
     font-weight: 600;
+    background: var(--anti_base);
+    color: var(--base);
 }
 #searchBar {
     width: 100%;
@@ -100,6 +102,7 @@ onMounted(load)
 }
 #searchBarLabel {
     position: absolute;
+    background: transparent;
     color: #888;
     left: calc(15vw + 1rem);
     top: 1.5rem;
@@ -114,10 +117,12 @@ onMounted(load)
     opacity: .5;
 }
 .none_found{
-    color: var(--base);
     margin-top: 2rem;
     padding: .5rem 1rem;
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
+}
+.none_found *{
+    color: var(--base);
 }
 </style>

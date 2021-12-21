@@ -22,18 +22,9 @@ create table "users"(
 create table "creator"(
     id serial primary key not null, 
     userID int not null, 
-    SAmount int,
     foreign key (userID) references users (id) on delete cascade on update cascade
     );
 
-create table "summaries"(
-    id serial primary key not null, 
-    Creator int,
-    "Subject" varchar, 
-    "Date" timestamp with time zone default current_timestamp,
-    sumname varchar not null,
-    foreign key (Creator) references creator (id) on delete cascade on update cascade
-    );
 
 create table ratings(
     id serial primary key not null, 
@@ -42,7 +33,7 @@ create table ratings(
     foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade
     );
 
-create table SAccess(
+create table saccess(
     id serial primary key not null,
     Summary int not null,
     userID int not null,
@@ -69,12 +60,22 @@ create table subjects(
     foreign key (subject_school) references schools (id) on delete cascade on update cascade
 );
 
+create table "summaries"(
+    id serial primary key not null, 
+    Creator int,
+    subject_id int, 
+    "Date" timestamp with time zone default current_timestamp,
+    sumname varchar not null,
+    foreign key (Creator) references creator (id) on delete cascade on update cascade,
+    foreign key (subject_id) references subjects (id) on delete cascade on update cascade
+    );
+
 insert into users (firstname, lastname,username, pwd) values ('Leon', 'Grass', 'LeonG','');
 insert into users (firstname, lastname,username, pwd) values ('Pirmin', 'Bothur', 'PirminB','');
 insert into creator (userID, SAmount) values (1,0);
-insert into summaries (Creator, sumname, "Subject") values(1, 'firstsummaryever.pdf', 'Informatik');
-insert into ratings (ratedSummary, rating) values (1, 5);
-insert into saccess (Summary, userID) values (1, 2);
 insert into locations (plz, location_name) values('79576', 'Weil am Rhein');
 insert into schools (school_name, school_plz) values ('Kant-Gymnasium', '79576');
 insert into subjects (subject_name, subject_school, subject_year) values ('Informatik', 1, 11);
+insert into summaries (Creator, subject_id, sumname) values(1, 1, 'firstsummaryever.pdf');
+insert into ratings (ratedSummary, rating) values (1, 5);
+insert into saccess (Summary, userID) values (1, 2);

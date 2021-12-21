@@ -36,6 +36,7 @@ const props = defineProps<Properties>();
     <router-link class="router_link" to="/">Home</router-link>
     <router-link class="router_link" to="/login">Login / Registrieren</router-link>
     <router-link class="router_link" to="/selection">Auswahl</router-link>
+    <router-link class="router_link" to="/userprofile">Profil</router-link>
   </div>
   
 </template>
@@ -64,6 +65,7 @@ const props = defineProps<Properties>();
   overflow: hidden;
   transform-origin: left;
   transition: color 0.2s;
+  outline: none;
 }
 .router_link::before {
   content: "";

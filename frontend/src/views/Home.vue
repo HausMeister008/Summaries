@@ -41,15 +41,22 @@
 #welcome{
     margin-top: var(--nav_height);
     width: 100vw;
-    min-height: 100vh;
+    height: calc(100vh - var(--nav_height));
     overflow: auto;
     scrollbar-width: thin;
     color: var(--base);
     background: var(--anti_base);
 }
 #welcome h1{
+    position:sticky;
+    top: 0;
     text-align: center;
     margin: 0;
+    z-index: 10;
+    color: var(--base);
+    background: var(--anti_base);
+    padding: .5rem 1rem;
+    box-shadow: 0 0 15px var(--box_shadows);
 }
 .info_tag{
     width: 90vw;
@@ -61,6 +68,9 @@
     padding: 2rem;
     text-align: center;
     font-size: 1.2rem;
+}
+.info_tag:last-child{
+    margin-bottom: 5rem;
 }
 @media (min-width: 700px) {
     .info_tag{

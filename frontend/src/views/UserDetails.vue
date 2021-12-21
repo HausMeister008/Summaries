@@ -1,5 +1,5 @@
 <script setup lang="ts">
-           </script>
+</script>
 <template>
     <div class="userinfo">
         <!-- <img
@@ -10,37 +10,65 @@
         <h1 id="username_hdln">{{ userName }}</h1>
     </div>
     <div class="user_detail_panel">
-        <div class="user_sum" v-if="usersums.length > 0" v-for="sum in usersums">
-            <p>{{ sum.Subject }}</p>
-            <div :class="'rat' + sum.rating.toString() + ' sumrating'">
-                <div class="rating">{{ sum.rating }}</div>
-                <svg id="rating_svg" :style="userStyle">
-                    <circle cx="1rem" cy="1rem" r="1rem" />
-                    <circle cx="1rem" cy="1rem" r="1rem" />
-                </svg>
+        <input
+                v-for="sum in usersums"
+                class="user_sum_checkbox"
+                type="checkbox"
+                :name="sum.id.toString()"
+                :id="sum.id.toString()"
+            />
+        <label :for="sum.id.toString()" class="user_sum" v-if="usersums.length > 0" v-for="sum in usersums">
+            <div class="user_sum_info">
+                <p>{{ sum.subject_name }}</p>
+                <div :class="'rat' + sum.rating.toString() + ' sumrating'">
+                    <div class="rating">{{ sum.rating }}</div>
+                    <svg id="rating_svg" :style="userStyle">
+                        <circle cx="1rem" cy="1rem" r="1rem" />
+                        <circle cx="1rem" cy="1rem" r="1rem" />
+                    </svg>
+                </div>
+                <p>{{ sum.sumname }}</p>
+                <p>{{ formatDate(sum.Date) }} - {{ formatTime(sum.Date) }}</p>
             </div>
-            <p>{{ sum.sumname }}</p>
-            <p>{{ sum.Date.date }} - {{ sum.Date.time }}</p>
-        </div>
+            <div class="detail_info">
+                <p>Schule: {{ sum.school_name }}</p>
+                <p>Ort: {{ sum.location_name }}</p>
+                <p>Klassenstufe {{ sum.subject_year }}</p>
+            </div>
+        </label>
         <div v-else class="no_sums">
             <h2 class="no_sums_hdln">No summaries found for this user</h2>
         </div>
     </div>
 </template>
 <script lang="ts">
-interface summaries {
+import { defineComponent } from 'vue'
+
+interface JsonEncodedSummary {
+    id: number,
     sumname: string,
-    Subject: string,
-    Date: { date: Date, time: Date },
-    rating: number
+    subject_name: string,
+    Date: string,
+    rating: number,
+    subject_year: number,
+    school_name: string,
+    location_name: string,
 }
-export default {
-    data() {
-        let usersums: Array<summaries> = []
-        let rating_num: number = 0
+
+interface Summary extends Omit<JsonEncodedSummary, 'Date'> {
+    Date: Date
+}
+
+interface Data {
+    usersums: Summary[];
+    rating_num: number;
+}
+
+export default defineComponent({
+    data(): Data {
         return {
-            usersums,
-            rating_num
+            usersums: [],
+            rating_num: 0
         }
     },
     props: {
@@ -54,16 +82,26 @@ export default {
         userName(): string {
             return this.name
         },
-        userStyle(): { '--rating_num': number } {
-            return {
-                '--rating_num': this.rating_num
-            }
+        userStyle(): string {
+            return `--rating_num: ${this.rating_num}`
         }
     },
     methods: {
+        formatDate(date: Date) {
+            return date.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' })
+        },
+        formatTime(date: Date) {
+            return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' })
+        },
         async initData() {
-            const response = await fetch(`/api/userdetails/${this.id}`)
-            this.usersums = await response.json()
+            console.log(localStorage.token)
+            const response = await fetch(`/api/userdetails/${this.id}/${localStorage.token}`)
+            const jsonFromResponse: Array<JsonEncodedSummary> = await response.json()
+            this.usersums = jsonFromResponse.map((jsonEncodedSummary) => ({ ...jsonEncodedSummary, Date: new Date(jsonEncodedSummary.Date) }))
+            this.rating_num = this.usersums[0]?.rating ?? 0
+
+            /*
+            this.usersums = (await response.json())
             this.usersums.forEach((sum) => {
                 var dt = new Date(sum.Date)
                 sum.Date = {
@@ -71,14 +109,23 @@ export default {
                     time: dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' }),
                 }
             })
-            this.rating_num = this.usersums[0].rating
+            this.rating_num = this.usersums.length>0 ? this.usersums[0].rating: 0
+            */
         }
     },
-    async created() {
-        this.initData();
-        this.$watch(() => this.$route.params, async () => this.initData)
+    created() {
+        //this.initData();
+        //this.$watch(() => this.$route.params, () => this.initData())
+    },
+    watch: {
+        '$route.params': {
+            immediate: true,
+            handler() {
+                this.initData();
+            }
+        }
     }
-}
+})
 // import { reactive, ref, onMounted, watch } from "vue";
 // interface UserInfoProps {
 //     username?: string
@@ -95,7 +142,7 @@ export default {
 // }
 </script>
 <style>
-#username_hdln{
+#username_hdln {
     color: var(--base);
 }
 .user_detail_panel {
@@ -123,29 +170,55 @@ export default {
     width: 150px;
 }
 .user_sum {
+    --initial-height: 100px;
+    position: relative;
     text-decoration: none;
     color: var(--base);
     display: flex;
     justify-content: space-around;
     align-items: center;
-    flex-direction: row;
-    height: 100px;
+    flex-direction: column;
+    height: var(--initial-height);
     width: 90%;
-    margin-left: 5%;
+    padding: 0;
     background: var(--anti_base);
     box-shadow: 0 0 15px var(--box_shadows);
-    padding: 0 2rem 0 0;
     border-radius: 5px;
     overflow: hidden;
-    transition:background 1s, color 1s, transform 0.2s, box-shadow 0.2s;
-    font-weight: 800;
+    transition: background 1s, color 1s, transform 0.2s, box-shadow 0.2s, height .2s;
     font-size: 1.1rem;
     margin-top: 1rem;
 }
+.user_sum_info, .detail_info{
+    position: absolute;
+    top: 0;
+    margin: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: row;
+    height: var(--initial-height);
+    width: 100%;
+    background: transparent;
+    overflow: hidden;
+    transition: background 1s, color 1s, transform 0.2s, box-shadow 0.2s;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+.detail_info {
+    top: var(--initial-height);
+}
+.user_sum_checkbox:checked ~ .user_sum{
+    height: calc(var(--initial-height) * 2);
+}
+.user_sum_checkbox {
+    display: none;
+}
 .user_sum:hover {
+    cursor: pointer;
     transform: scale(1.01);
     box-shadow: 0 0 15px var(--box_shadows_dark);
-    cursor: pointer;
     z-index: 8;
 }
 .sumrating {
@@ -195,5 +268,12 @@ export default {
     stroke-dashoffset: calc(
         6.25rem - (6.25rem * calc(100 * (var(--rating_num)) / 5) / 100)
     );
+}
+.no_sums_hdln {
+    color: var(--base);
+    background: var(--anti_base);
+    box-shadow: 0 0 15px var(--box_shadows_dark);
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
 }
 </style>

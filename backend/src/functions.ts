@@ -1,5 +1,12 @@
 import bcrypt from "bcrypt";
-export default async function hash_pwd(pwd: string):Promise<any> {
+import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
+import dotenv, { DotenvConfigOutput } from 'dotenv'
+const dotenv_vars = dotenv.config()
+const parsed = dotenv_vars.parsed
+const ACCESS_TOKEN_SECRET: string = parsed ? parsed.ACCESS_TOKEN_SECRET : 'someothersecretidontneed'
+const REFRESH_TOKEN_SECRET: string = parsed ? parsed.REFRESH_TOKEN_SECRET : 'somethinggweyelsethatisnotwrittttencrctly'
+
+export async function hash_pwd(pwd: string):Promise<any> {
     const salt_rounds: number = 10;
     try{
         const salt = await bcrypt.genSalt(salt_rounds)
@@ -13,4 +20,24 @@ export default async function hash_pwd(pwd: string):Promise<any> {
 export async function compare_hash(hash:string, pwd:string):Promise<boolean> {
     const same = await bcrypt.compare(pwd, hash)
     return same
+}
+
+export function sign_access_token(sub:string, is_creator:boolean=false){
+    return jsonwebtoken.sign({ sub: sub, is_creator:is_creator }, ACCESS_TOKEN_SECRET)
+}
+export function sign_refresh_token(sub:string, secret:string=''){
+    return jsonwebtoken.sign({ sub: sub, secret:secret }, REFRESH_TOKEN_SECRET)
+}
+interface VerifyedAccessToken{
+    sub?:string|JwtPayload, 
+    is_creator?:boolean|JwtPayload
+}
+export function verify_access_token(token:string):Array<string|(() => string)|undefined|boolean|JwtPayload>{
+    try{
+        const data:VerifyedAccessToken = jsonwebtoken.verify(token, ACCESS_TOKEN_SECRET);
+        const {sub, is_creator} = data
+        return [sub, is_creator]
+    }catch(e){
+        return ['', false]
+    }
 }

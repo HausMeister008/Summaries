@@ -56,11 +56,10 @@ const lgn_or_rgstr = ref(true)
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--box_shadows_dark);
+    background: var(--box_shadows_dark);
     left: 0;
     top: 0;
     z-index: -1;
-    filter: blur(1px);
     transition: transform .2s;
 }
 #lgn_or_rgstr_label span:first-child{
@@ -113,6 +112,7 @@ const lgn_or_rgstr = ref(true)
     position: relative;
 }
 .loginHeadline {
+    color:var(--base);
     margin-bottom: 3rem;
     margin-top: -6rem;
     font-size: 3rem;
@@ -173,5 +173,64 @@ const lgn_or_rgstr = ref(true)
 }
 .submit_form:hover {
     cursor: pointer;
+}
+.checkbox_input {
+    display: none;
+    outline: none;
+    margin: 0 .5rem;
+}
+.checkbox_input:checked{
+    background: var(--base); 
+    color: var(--anti_base);
+}
+.checkbox_input:hover{
+    cursor: pointer;
+    transform: scale(1.1);
+}
+.lgn_label_checkbox{
+    padding-left: 2em;
+    position: relative;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+}
+.lgn_label_checkbox::before{
+    content: "\2713";
+    font-size: .8em;
+    position: absolute;
+    display: flex;
+    justify-content:center;
+    align-items:center;
+    left: .5em;
+    width: 1rem;
+    height: 1rem;
+    background: var(--anti_base);
+    color: var(--anti_base);
+    border-radius: 5px;
+    border: 1px solid var(--base);
+    transition: color .1s, background 1s;
+}
+.checkbox_input:checked ~ .lgn_label_checkbox::before{
+    color: var(--base);
+}
+.checkbox_input_group{
+    justify-content: left;
+    align-items: center;
+}
+.logged_in{
+    position: absolute;
+    font-size: 2em;
+    font-weight: 900;
+    background: var(--base);
+    color: var(--anti_base);
+    padding: .5rem 1rem;
+    border-radius: 5px;
+    box-shadow: 0 0 15px var(--box_shadows_dark);
+    transform: scale(0);
+    opacity: 0;
+}
+.logged_in .shown{
+    transform: scale(1);
+    opacity: 1;
 }
 </style>
