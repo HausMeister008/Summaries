@@ -5,33 +5,49 @@ const adding_sum = ref(false)
 const subject_inpt = ref('')
 const school_inpt = ref('')
 const sum_name_inpt = ref('')
+
+interface subject{
+    name: string,
+    id: number
+}
+
 interface options {
-    subjects: string[],
+    subjects: subject[],
     schools: string[]
 }
 
-var options: options = {
+var options: options = reactive({
     subjects: [],
     schools: [],
-}
+})
 
 async function load_data() {
-    const res = await fetch('/api/addSumValues')
+    const res = await fetch(`/api/addSumValues/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({ 
+            subject: subject_inpt.value,
+            school: school_inpt.value
+        })
+    })
     const result: options = await res.json()
-    console.log(result)
     // result = {
     //     subjects: ['Informatik', 'Sport'],
     //     schools: ['Kant-Gymnasium Weil am Rhein']
     //   }
     // adding all the options to options
     options = Object.assign(options, result)
-    
-    // Object.keys(options).forEach((option) => {
-    //     options[option].splice(0, options[option].length, ...result[option])
-    // })
+
 }
 
 onMounted(load_data)
+
+watch(subject_inpt, (old_sub, new_sub) => {
+    load_data()
+})
+watch(school_inpt, (old_school, new_school) => {
+    load_data()
+})
 
 </script>
 
@@ -56,7 +72,7 @@ onMounted(load_data)
                         v-model="subject_inpt"
                     >
                         <option value selected disabled>Fachauswahl</option>
-                        <option v-for="subject in options.subjects" :value="subject">{{ subject }}</option>
+                        <option v-for="subject in options.subjects" :value="subject.id">{{ subject.name }}</option>
                     </select>
                 </div>
                 <div class="dropdown_menu">

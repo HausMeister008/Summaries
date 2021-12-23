@@ -35,14 +35,15 @@ app.get("/api/users", async (req, res) => {
     from users, creator, summaries
     where
     users.id = creator.userID
-    and users.username != '${sub}'
+    and users.username != $1
     and summaries.creator = creator.id
     and (
-      lower(firstname) like lower('${usernameStartsWith}%') 
-      or lower(lastname) like lower('${usernameStartsWith}%')
-      or lower(concat(firstname, ' ' , lastname)) like lower('${usernameStartsWith}%'))
+      lower(firstname) like lower($2||'%') 
+      or lower(lastname) like lower($2||'%')
+      or lower(concat(firstname, ' ' , lastname)) like lower($2||'%')
+      )
     group by users.id
-    `
+    `, [sub, usernameStartsWith]
   )
   // var db_res = await pool.query('select * from "user";')
   var db_rows = db_res.rows
@@ -56,7 +57,6 @@ app.get("/api/users", async (req, res) => {
       avatar: row.avatar ?? undefined
     })
   })
-  console.log(res_json)
   res
     .status(200)
     .json(res_json);
@@ -111,15 +111,19 @@ app.post('/api/register', async (req, res) => {
   const { username, pwd, firstname, lastname, creator_account } = req.body
   const hashed_pwd = await functions.hash_pwd(pwd)
   try {
-    const user_exists = (await pool.query(`select * from users where username = '${username}'`)).rows.length > 0
+    const user_exists = (
+      await pool.query(`select * from users where username = $1`, [username])
+      ).rows.length > 0
     if (!user_exists) {
       const query_res: queryRetVal | any = await pool.query(
         `insert into users (username, firstname, lastname, pwd, avatar) 
-      values ('${username}', '${firstname}', '${lastname}', '${hashed_pwd}', '${default_avatar}')
-      returning *`
+      values ( $1,  $2,  $3,  $4,  $5)
+      returning *`, [username,firstname,lastname,hashed_pwd,default_avatar]
       )
       if (creator_account) {
-        const qr = await pool.query(`insert into creator (userid) values (${query_res.rows[0].id})`)
+        const qr = await pool.query(
+          `insert into creator (userid) values ($1)`
+          ,[query_res.rows[0].id])
       }
       res.send({ success: true })
     } else {
@@ -140,9 +144,11 @@ app.post('/api/login', async (req, res) => {
     console.log('unauthorized authorization-attempt')
     return
   }
-  const res_users = await pool.query(`select pwd from users where username = '${username}'`)
+  const res_users = await pool.query(`select pwd from users where username = $1`, [username])
   const user_exists = res_users.rows.length == 1
-  const res_creator = await pool.query(`select creator.id from users, creator where username = '${username}' and users.id = creator.userid`)
+  const res_creator = await pool.query(
+    `select creator.id from users, creator where username = $1 and users.id = creator.userid`
+    ,[username])
   const user_is_creator: boolean = res_creator.rows.length == 1
   const right_pwd = user_exists ? await functions.compare_hash(res_users.rows[0].pwd, pwd) : false
   const user_token = right_pwd ? functions.sign_access_token(username, user_is_creator) : ''
@@ -187,10 +193,27 @@ app.post('/api/userprofile', async (req, res) => {
 
 })
 
-app.get('/api/addSumValues', async (req, res)=>{
+app.post('/api/addSumValues/', async (req, res)=>{
+  const current_subject:number = typeof(req.body.subject)=='number'?req.body.subject:0
+  const current_school = req.body.school
+
+  var subjects: Array<Object>= (await pool.query(`
+  select subject_name, subjects.id
+  from subjects, schools
+  where lower(schools.school_name) like lower($1||'%')
+  and schools.id = subjects.subject_school
+  `, [current_school])).rows.map((row)=>{return {name: row.subject_name, id: row.id}}).sort()
+  
+  var schools: Array<string>= (await pool.query(`
+  select distinct(school_name) 
+  from subjects, schools
+  where (subjects.id = $1 or 0=$1)
+  and schools.id = subjects.subject_school
+  `,[current_subject])).rows.map((row)=>{return row.school_name}).sort()
+  
   res.send({
-    subjects: ['Informatik', 'Sport'],
-    schools: ['Kant-Gymnasium Weil am Rhein']
+    subjects,
+    schools
   })
 })
 

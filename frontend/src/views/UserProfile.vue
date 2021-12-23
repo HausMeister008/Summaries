@@ -20,9 +20,7 @@ async function get_user_data() {
         })
     })
     var json_r = [await result.json()]
-    console.log(json_r)
     user_info.splice(0, user_info.length, ...json_r)
-    console.log(user_info)
 
 }
 onMounted(get_user_data)
