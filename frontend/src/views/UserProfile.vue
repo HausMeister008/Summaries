@@ -62,7 +62,7 @@ onMounted(get_user_data)
     position: relative;
     text-align: center;
     display: flex;
-    justify-content: baseline;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
-
+import AddSum from './AddSum.vue'
 export interface Properties {
     username: string,
     nSummaries: string,
@@ -34,6 +34,7 @@ const props = defineProps<Properties>();
             v-if="props.is_creator"
             class="profile_component"
         >Durchschnittliche Bewertung: {{ props.avg_rating ? props.avg_rating : 'Keine vorhanden' }}</p>
+        <add-sum class="profile_component" v-if="props.is_creator"/>
     </div>
 </template>
 <style scoped>

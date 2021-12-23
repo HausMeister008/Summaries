@@ -76,6 +76,7 @@ button{
   font-family: Calibri;
   min-height: 100vh;
   background: var(--anti_base);
+  transition: background 1s, color 1s
 }
 
 #app *::selection{

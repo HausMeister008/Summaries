@@ -187,6 +187,13 @@ app.post('/api/userprofile', async (req, res) => {
 
 })
 
+app.get('/api/addSumValues', async (req, res)=>{
+  res.send({
+    subjects: ['Informatik', 'Sport'],
+    schools: ['Kant-Gymnasium Weil am Rhein']
+  })
+})
+
 const port = 8080
 const server = app.listen(port, () => {
   console.log('opened server on port', port);
