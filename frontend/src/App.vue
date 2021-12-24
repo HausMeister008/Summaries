@@ -1,128 +1,107 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import { reactive, ref, onMounted, watch } from "vue";
-import UserPanel, {
-  Properties as UserProperties,
-} from "./components/UserPanel.vue";
-
-const username = ref('')
-
-watch(username, (newUsername, oldUsername) => {
-  fetch(`/api/users?usernameStartsWith=${encodeURIComponent(newUsername)}`)
-    .then((response) => response.json())
-    .then((result) => users.splice(0, users.length, ...result));
+// import { reactive, ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
+const display_modes = {
+  dark:
+  `--base: black; 
+      --anti_base: white; 
+      --box_shadows: #ccc; 
+      --box_shadows_dark: #bbb;
+      --top_nav_bg:#333;`,
+  light: 
+      `--base: white; 
+      --anti_base: #111;
+      --box_shadows: #050505;
+      --box_shadows_dark: #000; 
+      --top_nav_bg:#444;`
+}
+const display_mode = ref(localStorage.display_mode??'DarkMode')
+const display_values = ref('')
+function set_display_mode(mode:string){
+  display_values.value = mode == 'LightMode' ? display_modes.light: display_modes.dark
+  document.getElementById('app')?.setAttribute('style', display_values.value) 
+}
+function switch_display_mode() {
+  display_mode.value = display_mode.value == 'LightMode' ? 'DarkMode' : 'LightMode'
+  localStorage.display_mode = display_mode.value
+  set_display_mode(display_mode.value)
+}
+onMounted(()=>{
+  set_display_mode(display_mode.value)
 })
-
-const users: UserProperties[] = reactive([]);
-
-const load = () => fetch("/api/users")
-  .then((response) => response.json())
-  .then((result) => users.splice(0, users.length, ...result));
-
-onMounted(load)
 
 </script>
 
 <template>
-  <div id="search">
-    <input id="searchBar" type="search" v-model="username" required />
-    <label id="searchBarLabel" for="searchBar">Suche...</label>
-    <!-- <div>Du suchst nach {{ username }}</div> -->
-  </div>
-  <div class="user_list">
-    <user-panel
-      v-for="user in users"
-      :name="user.name"
-      :n-summaries="user.nSummaries"
-      :avatar="user.avatar"
-    ></user-panel>
-  </div>
+    <top-navigation></top-navigation>
+    <router-view/>
+    <button id="light_dark_button" @click="switch_display_mode">{{ display_mode }}</button>
 </template>
+
+<script lang='ts'>
+import TopNavigation from "./components/TopNavigation.vue";
+
+export default {
+  components: { TopNavigation }
+}
+</script>
+
 
 <style>
 :root {
   --search_height: 5rem;
+  --nav_height: 4rem;
 }
 * {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  transition: background 1s, color 1s, box-shadow 1s;
 }
 body {
   overflow: hidden;
   background: transparent;
 }
+button{ 
+  outline: none;
+}
 #app {
   width: 100%;
-  min-height: 100vh;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
   font-family: Calibri;
-  max-height: calc(100vh - 7rem);
-  background: transparent;
-}
-.user_list {
-  width: 100%;
-  max-height: 100%;
-  margin-top: var(--search_height);
-  background: white;
-  box-shadow: inset 0 0 15px #eee;
-  overflow: auto;
-  scrollbar-width: thin;
-  z-index: 8;
-}
-.user_list::-webkit-scrollbar {
-  width: 0.5rem;
-}
-.user_list::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 5px;
-}
-#search {
-  width: 100vw;
-  height: var(--search_height);
-  padding: 0 15vw;
-  position: absolute;
-  top: 0;
-  background: #fff;
+  min-height: 100vh;
+  background: var(--anti_base);
+  transition: background 1s, color 1s
 }
 
-#search * {
-  font-size: 1.1rem;
-  font-weight: 600;
+#app *::selection{
+  color: var(--anti_base);
+  background: var(--base);
 }
-#searchBar {
-  width: 100%;
-  height: 2.5rem;
-  position: relative;
-  margin-top: 1rem;
-  padding: 0 1rem;
-  outline: none;
-  border: none;
-  background: transparent;
-  border-bottom: 2px solid #aaa;
-  transition: border-color 0.2s;
-  z-index: 10;
-}
-#searchBar:focus,
-#searchBar:valid {
-  border-bottom-color: #444;
-}
-#searchBarLabel {
+#light_dark_button {
   position: absolute;
-  color: #888;
-  left: calc(15vw + 1rem);
-  top: 1.5rem;
-  transition: top 0.2s, font-size 0.2s, color 0.2s;
-  z-index: 11;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 30px;
+  color: var(--base);
+  background: var(--box_shadows);
+  box-shadow: 0 5px 10px var(--box_shadows_dark);
+  transition: opacity 0.2s;
+  bottom: 1rem;
+  right: 1rem;
+  opacity: 0.7;
+  z-index: 20;
+  transition: box-shadow .2s;
 }
-#searchBar:focus ~ #searchBarLabel,
-#searchBar:valid ~ #searchBarLabel {
-  top: 0.5rem;
-  font-size: 0.9rem;
-  color: #000;
+#light_dark_button:hover {
+  cursor: pointer;
+  opacity: .9;
 }
 </style>

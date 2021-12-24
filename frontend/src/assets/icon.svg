@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="237mm"
+   height="237mm"
+   viewBox="0 0 237 237"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   sodipodi:docname="icon.svg"
+   inkscape:export-filename="C:\Users\leong\Nextcloud\proggen\WebProjects\Summaries\frontend\src\assets\logo.png"
+   inkscape:export-xdpi="12.095238"
+   inkscape:export-ydpi="12.095238"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.47433592"
+     inkscape:cx="180.252"
+     inkscape:cy="462.75222"
+     inkscape:window-width="1920"
+     inkscape:window-height="1057"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer4"
+     height="296mm" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer4"
+     inkscape:label="Ebene 2">
+    <rect
+       style="fill:#000000;stroke:#f50000;stroke-width:0.0198384;stroke-opacity:0"
+       id="rect15387"
+       width="238.76248"
+       height="237.08885"
+       x="-0.017418427"
+       y="-0.017243331" />
+  </g>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="text1706"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:352.778px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri, Bold';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke-width:0.272028"
+       d="m 131.14091,4.5722822 c -10.91027,0 -21.26925,1.3078918 -31.07624,3.9233348 -9.684399,2.615446 -18.142907,6.595292 -25.375562,11.939896 -7.110065,5.23089 -12.810365,11.883204 -17.100923,19.956968 -4.16797,7.960051 -6.251765,17.228146 -6.251765,27.803645 0,9.210907 1.471044,17.113919 4.413141,23.709381 2.942095,6.595473 6.742481,12.338233 11.400799,17.227983 4.780907,4.77603 10.174556,8.92646 16.181335,12.45161 6.006781,3.41146 12.197612,6.48176 18.572155,9.21091 6.37454,2.72915 12.56482,5.34495 18.5716,7.84668 6.00679,2.38801 11.33931,5.00328 15.99764,7.84615 4.78091,2.72916 8.6424,5.91335 11.58449,9.55223 2.9421,3.52515 4.41314,7.78947 4.41314,12.79293 0,4.32117 -0.85774,8.24432 -2.57397,11.76949 -1.71622,3.52516 -4.22944,6.48157 -7.53929,8.86959 -3.18727,2.38802 -7.10987,4.26431 -11.7682,5.62889 -4.65831,1.25086 -9.92974,1.87646 -15.81393,1.87646 -8.94888,0 -16.855747,-0.91006 -23.720638,-2.7295 -6.742302,-1.93315 -12.565377,-4.0367 -17.46887,-6.31099 -4.903492,-2.27431 -8.992522,-4.25696 -12.136137,-6.14061 -2.906548,-1.7416 -5.438422,-4.49515 -10.954092,2.98815 -5.129308,6.95911 -36.004048,24.19494 -33.841309,37.27062 1.326157,8.01782 67.127878,9.21157 74.952053,9.20738 8.086208,0.55362 46.522033,0.39801 57.187133,-2.55859 10.66509,-2.95659 19.98136,-7.33478 27.94954,-13.13424 7.96817,-5.91317 14.28177,-13.24778 18.9401,-22.00384 4.6583,-8.75605 6.9871,-18.93369 6.9871,-30.53262 0,-8.86977 -1.47105,-16.54552 -4.41314,-23.02726 -2.9421,-6.59548 -6.8036,-12.28105 -11.5845,-17.05708 -4.78091,-4.88973 -10.23567,-9.04016 -16.36504,-12.45162 -6.12935,-3.52515 -12.3813,-6.65267 -18.75585,-9.3818 -6.37454,-2.72917 -12.62648,-5.28775 -18.75584,-7.675775 -6.12937,-2.501725 -11.64579,-5.116991 -16.54928,-7.846146 -4.78091,-2.842876 -8.6424,-6.02706 -11.5845,-9.552237 -2.81951,-3.638877 -4.22944,-7.90317 -4.22944,-12.79292 0,-3.297736 0.61275,-6.42472 1.83862,-9.381312 1.34846,-2.956588 3.31004,-5.458483 5.88438,-7.505355 2.69692,-2.160585 6.00677,-3.80962 9.92958,-4.94677 3.92278,-1.250866 8.51979,-1.875953 13.79104,-1.875953 6.74232,0 12.93315,0.795663 18.57217,2.387672 5.639,1.478294 10.60379,3.184015 14.89434,5.11717 4.29057,1.81944 7.44785,4.940889 10.84861,5.117172 12.27688,0.636394 54.69026,-41.90537 46.01142,-47.3875642 0,0 -85.42285,-0.2021296 -91.06187,-0.2021296 z"
+       sodipodi:nodetypes="scccssccscccssccscsssscscsscccscccscccsccscs" />
+  </g>
+</svg>

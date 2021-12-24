@@ -9,46 +9,73 @@ create user leongrass password 'w1rch4tt3npr1v4t';
 grant all privileges on database summaries to leongrass;
 
 -- @block createTables
-create table "user"(
-    mail varchar primary key not null,
+create table "users"(
+    id serial primary key not null,
+    username varchar not null,
     firstName varchar not null, 
-    name varchar);
+    lastname varchar,
+    pwd varchar not null,
+    avatar varchar
+    );
 
 
 create table "creator"(
     id serial primary key not null, 
-    "User" varchar not null, 
-    SAmount int,
-    foreign key ("User") references "user" (mail) on delete cascade on update cascade
+    userID int not null, 
+    foreign key (userID) references users (id) on delete cascade on update cascade
     );
 
-create table "summaries"(
-    id serial primary key not null, 
-    Creator int,
-    "Subject" varchar, 
-    "Date" timestamp with time zone default current_timestamp,
-    sumname varchar not null,
-    foreign key (Creator) references creator (id) on delete cascade on update cascade
-    );
 
 create table ratings(
     id serial primary key not null, 
     ratedSummary int not null, 
-    rating int not null default 5,
+    rating float not null default 5.0,
     foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade
     );
 
-create table SAccess(
+create table saccess(
     id serial primary key not null,
     Summary int not null,
-    userMail varchar not null,
+    userID int not null,
     foreign key (Summary) references summaries (id) on delete cascade on update cascade,
-    foreign key (userMail) references "user" (mail) on delete cascade on update cascade
+    foreign key (userID) references users (id) on delete cascade on update cascade
+);
+create table locations(
+    plz varchar primary key not null,
+    location_name varchar not null
 );
 
-insert into "user" (mail, firstName, name) values ('leon.grass@gmx.net', 'Leon', 'Grass');
-insert into "user" (mail, firstName, name) values ('bothurpirmin@gmail.com', 'Pirmin', 'Bothur');
-insert into creator ("User", SAmount) values ('leon.grass@gmx.net',0);
-insert into summaries (Creator, sumname, "Subject") values(1, 'firstsummaryever.pdf', 'Informatics');
+create table schools(
+    id serial primary key not null,
+    school_name varchar,
+    school_plz varchar,
+    foreign key (school_plz) references locations (plz) on delete cascade on update cascade
+);
+
+create table subjects(
+    id serial primary key not null,
+    subject_name varchar not null,
+    subject_school int,
+    subject_year int,
+    foreign key (subject_school) references schools (id) on delete cascade on update cascade
+);
+
+create table "summaries"(
+    id serial primary key not null, 
+    Creator int,
+    subject_id int, 
+    "Date" timestamp with time zone default current_timestamp,
+    sumname varchar not null,
+    foreign key (Creator) references creator (id) on delete cascade on update cascade,
+    foreign key (subject_id) references subjects (id) on delete cascade on update cascade
+    );
+
+insert into users (firstname, lastname,username, pwd) values ('Leon', 'Grass', 'LeonG','');
+insert into users (firstname, lastname,username, pwd) values ('Pirmin', 'Bothur', 'PirminB','');
+insert into creator (userID, SAmount) values (1,0);
+insert into locations (plz, location_name) values('79576', 'Weil am Rhein');
+insert into schools (school_name, school_plz) values ('Kant-Gymnasium', '79576');
+insert into subjects (subject_name, subject_school, subject_year) values ('Informatik', 1, 11);
+insert into summaries (Creator, subject_id, sumname) values(1, 1, 'firstsummaryever.pdf');
 insert into ratings (ratedSummary, rating) values (1, 5);
-insert into SAccess (Summary, userMail) values (1, 'bothurpirmin@gmail.com');
+insert into saccess (Summary, userID) values (1, 2);
