@@ -1,45 +1,47 @@
 <script setup lang="ts">
 </script>
 <template>
-    <div class="userinfo">
-        <h1 id="username_hdln">{{ userName }}</h1>
-    </div>
-    <div class="user_detail_panel">
-        <div class="infos" v-if="usersums.length > 0" v-for="sum in usersums">
-            <input
-                class="user_sum_checkbox"
-                type="checkbox"
-                :name="sum.id.toString()"
-                :id="sum.id.toString()"
-            />
-            <label :for="sum.id.toString()" class="user_sum">
-                <div class="user_sum_info">
-                    <p>{{ sum.subject_name }}</p>
-                    <div
-                        :class="'rat' + sum.rating.toString() + ' sumrating'"
-                        :title="sum.ratingamount + ' Bewertungen'"
-                    >
-                        <div class="rating">{{ sum.rating }}</div>
-                        <svg
-                            id="rating_svg"
-                            :style="'--rating_num:' + sum.rating_num.toString() + ';'"
-                        >
-                            <circle cx="1rem" cy="1rem" r="1rem" />
-                            <circle cx="1rem" cy="1rem" r="1rem" />
-                        </svg>
-                    </div>
-                    <p>{{ sum.sumname }}</p>
-                    <p>{{ formatDate(sum.Date) }} - {{ formatTime(sum.Date) }}</p>
-                </div>
-                <div class="detail_info">
-                    <p>Schule: {{ sum.school_name }}</p>
-                    <p>Ort: {{ sum.location_name }}</p>
-                    <p>Klassenstufe {{ sum.subject_year }}</p>
-                </div>
-            </label>
+    <div class="page">
+        <div class="userinfo">
+            <h1 id="username_hdln">{{ userName }}</h1>
         </div>
-        <div v-else class="no_sums">
-            <h2 class="no_sums_hdln">No summaries found for this user</h2>
+        <div class="user_detail_panel">
+            <div class="infos" v-if="usersums.length > 0" v-for="sum in usersums">
+                <input
+                    class="user_sum_checkbox"
+                    type="checkbox"
+                    :name="sum.id.toString()"
+                    :id="sum.id.toString()"
+                />
+                <label :for="sum.id.toString()" class="user_sum">
+                    <div class="user_sum_info">
+                        <p>{{ sum.subject_name }}</p>
+                        <div
+                            :class="'rat' + sum.rating.toString() + ' sumrating'"
+                            :title="sum.ratingamount + ' Bewertungen'"
+                        >
+                            <div class="rating">{{ sum.rating }}</div>
+                            <svg
+                                id="rating_svg"
+                                :style="'--rating_num:' + sum.rating_num.toString() + ';'"
+                            >
+                                <circle cx="1rem" cy="1rem" r="1rem" />
+                                <circle cx="1rem" cy="1rem" r="1rem" />
+                            </svg>
+                        </div>
+                        <p>{{ sum.sumname }}</p>
+                        <p>{{ formatDate(sum.Date) }} - {{ formatTime(sum.Date) }}</p>
+                    </div>
+                    <div class="detail_info">
+                        <p>Schule: {{ sum.school_name }}</p>
+                        <p>Ort: {{ sum.location_name }}</p>
+                        <p>Klassenstufe {{ sum.subject_year }}</p>
+                    </div>
+                </label>
+            </div>
+            <div v-else class="no_sums">
+                <h2 class="no_sums_hdln">Bisher hat dieser Creator keine Zusammenfassung hochgeladen</h2>
+            </div>
         </div>
     </div>
 </template>
@@ -74,12 +76,12 @@ export default defineComponent({
         }
     },
     props: {
-        id: { type: Number, required: true },
+        id: { type: String, required: true },
         name: { type: String, required: true }
     },
     computed: {
         userID(): Number {
-            return this.id
+            return parseInt(this.id)
         },
         userName(): string {
             return this.name
@@ -93,11 +95,9 @@ export default defineComponent({
             return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' })
         },
         async initData() {
-            console.log(localStorage.token)
             const response = await fetch(`/api/userdetails/${this.id}/${localStorage.token}`)
             const jsonFromResponse: Array<JsonEncodedSummary> = await response.json()
             this.usersums = jsonFromResponse.map((jsonEncodedSummary) => ({ ...jsonEncodedSummary, Date: new Date(jsonEncodedSummary.Date), rating_num: jsonEncodedSummary?.rating ?? 0 }))
-            console.log(this.usersums)
         }
     },
     created() {
@@ -166,8 +166,10 @@ export default defineComponent({
     border-radius: 5px;
     overflow: hidden;
     transition: background 1s, color 1s, transform 0.2s, box-shadow 0.2s,
-        height 0.2s;
+    height 0.2s;
     font-size: 1.1rem;
+}
+.user_sum + .user_sum{
     margin-top: 1rem;
 }
 .user_sum_info,

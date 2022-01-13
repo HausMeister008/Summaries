@@ -27,7 +27,7 @@ onMounted(get_user_data)
 </script>
 
 <template>
-    <div class="userprofile">
+    <div class="userprofile page">
         <user-profile
             class="user_profile_info"
             v-if="user_info[0]"
@@ -46,8 +46,6 @@ onMounted(get_user_data)
 .userprofile{
     position: relative;
     margin-top: var(--nav_height);
-    width: 100%;
-    height: calc(100vh - var(--nav_height));
     display: flex;
     justify-content: center;
     align-items: center;
@@ -56,7 +54,7 @@ onMounted(get_user_data)
 .user_profile_info {
     color: var(--base);
     background: var(--anti_base);
-    padding: 8rem;
+    padding: 2rem 4rem;
     position: relative;
     text-align: center;
     display: flex;

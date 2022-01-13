@@ -8,7 +8,7 @@
 
 
 <template>
-    <div id="welcome">
+    <div id="welcome" class="page">
         <h1>Willkommen</h1>
         <div class="info_tag">
             <h2>Kurze Einweisung</h2>

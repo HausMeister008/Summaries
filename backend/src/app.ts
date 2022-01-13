@@ -2,13 +2,18 @@ import express, { query } from "express";
 import { Pool } from "pg";
 // https://node-postgres.com/
 const app = express();
-import jsonwebtoken from "jsonwebtoken";
+import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import dotenv, { DotenvConfigOutput } from 'dotenv'
 const dotenv_vars = dotenv.config()
 const parsed = dotenv_vars.parsed
 const ACCESS_TOKEN_SECRET: string | undefined = parsed ? parsed.ACCESS_TOKEN_SECRET : 'someothersecretidontneed'
 const REFRESH_TOKEN_SECRET: string | undefined = parsed ? parsed.REFRESH_TOKEN_SECRET : 'somethinggweyelsethatisnotwrittttencrctly'
 import * as functions from "./functions";
+import multyparty from 'multiparty'
+import { nanoid } from 'nanoid'
+import sharp from 'sharp'
+import fs from 'fs'
+import { verify_access_token } from "./functions";
 
 
 const pool = new Pool({
@@ -32,11 +37,12 @@ app.get("/api/users", async (req, res) => {
   // only the creators with at least one summary uploaded
   var db_res = await pool.query(
     `select users.id as "UserID", username, firstname, lastname, avatar, count(summaries.id) as "nSummaries"
-    from users, creator, summaries
+    from 
+    users, creator
+    left join summaries on (summaries.creator = creator.id)
     where
-    users.id = creator.userID
-    and users.username != $1
-    and summaries.creator = creator.id
+    users.id = creator.userID and
+    users.username != $1
     and (
       lower(firstname) like lower($2||'%') 
       or lower(lastname) like lower($2||'%')
@@ -113,17 +119,17 @@ app.post('/api/register', async (req, res) => {
   try {
     const user_exists = (
       await pool.query(`select * from users where username = $1`, [username])
-      ).rows.length > 0
+    ).rows.length > 0
     if (!user_exists) {
       const query_res: queryRetVal | any = await pool.query(
         `insert into users (username, firstname, lastname, pwd, avatar) 
       values ( $1,  $2,  $3,  $4,  $5)
-      returning *`, [username,firstname,lastname,hashed_pwd,default_avatar]
+      returning *`, [username, firstname, lastname, hashed_pwd, default_avatar]
       )
       if (creator_account) {
         const qr = await pool.query(
           `insert into creator (userid) values ($1)`
-          ,[query_res.rows[0].id])
+          , [query_res.rows[0].id])
       }
       res.send({ success: true })
     } else {
@@ -148,7 +154,7 @@ app.post('/api/login', async (req, res) => {
   const user_exists = res_users.rows.length == 1
   const res_creator = await pool.query(
     `select creator.id from users, creator where username = $1 and users.id = creator.userid`
-    ,[username])
+    , [username])
   const user_is_creator: boolean = res_creator.rows.length == 1
   const right_pwd = user_exists ? await functions.compare_hash(res_users.rows[0].pwd, pwd) : false
   const user_token = right_pwd ? functions.sign_access_token(username, user_is_creator) : ''
@@ -171,21 +177,23 @@ app.post('/api/userprofile', async (req, res) => {
   const { token } = req.body
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
-  const is_creator:boolean = typeof(verified_token[1]) === 'boolean'? verified_token[1]:false
+  const is_creator: boolean = typeof (verified_token[1]) === 'boolean' ? verified_token[1] : false
 
   const creator_info_result = await functions.userProfileInfo(sub)
 
   const creator_info_data: UserDetails = (
     creator_info_result.length > 0 ?
       creator_info_result[0] :
-      { id: 0, 
-        username: undefined, 
-        firstname: undefined, 
-        lastname: undefined, 
-        avatar: undefined, 
-        avg_rating: 0, 
-        nSummaries: 0, 
-        is_creator: false }
+      {
+        id: 0,
+        username: undefined,
+        firstname: undefined,
+        lastname: undefined,
+        avatar: undefined,
+        avg_rating: 0,
+        nSummaries: 0,
+        is_creator: false
+      }
   )
   var ret_val = creator_info_data
   ret_val.is_creator = is_creator
@@ -193,29 +201,180 @@ app.post('/api/userprofile', async (req, res) => {
 
 })
 
-app.post('/api/addSumValues/', async (req, res)=>{
-  const current_subject:number = typeof(req.body.subject)=='number'?req.body.subject:0
+app.post('/api/SumValues/', async (req, res) => {
+  const current_subject: number = typeof (req.body.subject) == 'number' ? req.body.subject : 0
   const current_school = req.body.school
 
-  var subjects: Array<Object>= (await pool.query(`
+  var subjects: Array<Object> = (await pool.query(`
   select subject_name, subjects.id
   from subjects, schools
   where lower(schools.school_name) like lower($1||'%')
   and schools.id = subjects.subject_school
-  `, [current_school])).rows.map((row)=>{return {name: row.subject_name, id: row.id}}).sort()
-  
-  var schools: Array<string>= (await pool.query(`
+  `, [current_school])).rows.map((row) => { return { name: row.subject_name, id: row.id } }).sort()
+
+  var schools: Array<string> = (await pool.query(`
   select distinct(school_name) 
   from subjects, schools
   where (subjects.id = $1 or 0=$1)
   and schools.id = subjects.subject_school
-  `,[current_subject])).rows.map((row)=>{return row.school_name}).sort()
-  
+  `, [current_subject])).rows.map((row) => { return row.school_name }).sort()
+
   res.send({
     subjects,
     schools
   })
 })
+
+
+interface addData {
+  filename?: string,
+  [sum_name: string]: string | undefined,
+  subject?: string,
+  school?: string,
+  creator?: string
+}
+
+app.post('/api/upload_sum', (req, res) => {
+  console.log('uploading new sum')
+  var add_data: addData = {}
+  try {
+    const form = new multyparty.Form()
+    const responses: Array<Promise<{ error?: any, filename: string }>> = []
+    var response_data: { success: boolean, files: string[] } = { success: false, files: [] }
+    form.on('part', (part) => {
+      add_data.filename = part.filename
+      if (!part.filename) {
+        // console.log('part without filename:', part.name)
+        return
+      }
+      const save_name = nanoid() + part.filename
+      // const resizePipeline = sharp()
+      console.info('part headers', part.headers)
+      const writer = fs.createWriteStream(`./Uploads/${save_name}`)
+      return responses.push(
+        new Promise((resolve, reject) => {
+          part
+            // .pipe(resizePipeline)
+            .pipe(writer)
+            .on('error', (error) => {
+              console.log(error.message)
+              reject({ filename: save_name, error: error })
+            })
+            .on('finish', () => {
+              response_data.success = true
+              response_data.files.push(save_name)
+              // Only if all are done
+              resolve({ filename: part.filename })
+              console.log('finish', add_data)
+              Promise.allSettled(responses).then(data => {
+                res.status(200).json(response_data)
+              })
+                .catch(err => {
+                  console.log(err.message)
+                })
+            })
+        })
+      )
+    })
+    form.on('field',async(name,value)=> {
+      console.log(name)
+      if (["subject", "school"].includes(name)) {
+        add_data.name = value
+      }else if ("sum_name_inpt"==name){
+        add_data.sum_name = value
+      }else if('usertoken'==name){
+        var sub:string|undefined|JwtPayload|boolean = await functions.verify_access_token(value)
+        sub = sub[0]
+        console.log(sub)
+        if (typeof(sub)=="string"){
+          add_data.creator = sub
+        }else{
+          add_data.creator = ''
+        }
+      }
+    })
+    form.on('progress', (received, total) => {
+      console.log('progress:', received / total)
+    })
+    form.on('close', () => {
+      // aperantly not emmitted when only using form.parse without cb
+      console.info('form was closed')
+    })
+
+    form.parse(req)
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+// app.post('/api/upload_sum', (req, res) => {
+//   console.log('uploading new sum')
+//   try {
+//     const form = new multyparty.Form()
+//     const responses: Array<Promise<{ error?: any, filename: string }>> = []
+//     var response_data: { success: boolean, files: string[] } = { success: false, files: [] }
+//     form.on('part', (part) => {
+//       if (!part.filename) {
+//         console.log('part without filename:', part.name)
+//         return
+//       }
+//       const save_name = nanoid() + part.filename
+//       // const resizePipeline = sharp()
+//       console.info('part headers', part.headers)
+//       const writer = fs.createWriteStream(`src/Uploads/${save_name}`)
+//       return responses.push(
+//         new Promise((resolve, reject) => {
+//           part
+//             // .pipe(resizePipeline)
+//             .pipe(writer)
+//             .on('error', (error) => {
+//               console.log(error.message)
+//               reject({ filename: save_name, error: error })
+//             })
+//             .on('finish', () => {
+//               response_data.success = true
+//               response_data.files.push(save_name)
+//               resolve({ filename: save_name })
+//             })
+//         })
+//       )
+//     })
+//     form.on('progress', (received, total) => {
+//       console.log('progress:', received / total)
+//     })
+//     form.on('close', () => {
+//       console.info('form was closed')
+//       // Only if all are done
+//       Promise.allSettled(responses).then(data => {
+//         console.log('All promises settled - sending results')
+//         res.status(200).json(response_data)
+//       })
+//         .catch(err => {
+//           console.log(err.message)
+//         })
+//     })
+
+//     form.parse(req, (err, fields, files:retfiles) => {
+//       if (err) {
+//         console.log(err.message)
+//         return
+//       }
+//       if (fields) {
+//         console.log(fields)
+//         if (files) {
+//           let k:keyof typeof files
+//           for (k in files){
+//             files[k].forEach(file =>{
+//               console.log(`File ${file.originalFilename} has been added`)
+//             })
+//           }
+//         }
+//       }
+//     })
+//   } catch (e) {
+//     console.log(e)
+//   }
+// })
 
 const port = 8080
 const server = app.listen(port, () => {

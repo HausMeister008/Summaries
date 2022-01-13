@@ -53,6 +53,7 @@ const props = defineProps<Properties>();
   justify-content: space-between;
   align-items: center;
   padding-right: 5rem;
+  z-index: 10;
 }
 #nav * {
   font-size: 1.5rem;

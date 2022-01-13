@@ -26,21 +26,23 @@ onMounted(load)
 
 
 <template>
-    <div id="search">
-        <input id="searchBar" type="search" v-model="username" required />
-        <label id="searchBarLabel" for="searchBar">Suche...</label>
-        <!-- <div>Du suchst nach {{ username }}</div> -->
-    </div>
-    <div class="user_list">
-        <user-panel
-            v-for="user in users"
-            :name="user.name"
-            :n-summaries="user.nSummaries"
-            :ID="user.ID"
-            :avatar="user.avatar"
-        ></user-panel>
-        <div class="none_found" v-if="users.length == 0">
-            <h2>Keine Ergebnisse!</h2>
+    <div class="page">
+        <div id="search">
+            <input id="searchBar" type="search" v-model="username" required />
+            <label id="searchBarLabel" for="searchBar">Suche...</label>
+            <!-- <div>Du suchst nach {{ username }}</div> -->
+        </div>
+        <div class="user_list">
+            <user-panel
+                v-for="user in users"
+                :name="user.name"
+                :n-summaries="user.nSummaries"
+                :ID="user.ID"
+                :avatar="user.avatar"
+            ></user-panel>
+            <div class="none_found" v-if="users.length == 0">
+                <h2>Keine Ergebnisse!</h2>
+            </div>
         </div>
     </div>
 </template>
@@ -106,7 +108,7 @@ onMounted(load)
     color: #888;
     left: calc(15vw + 1rem);
     top: 1.5rem;
-    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity .2s;
+    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity 0.2s;
     z-index: 11;
 }
 #searchBar:focus ~ #searchBarLabel,
@@ -114,15 +116,15 @@ onMounted(load)
     top: 0.5rem;
     font-size: 0.9rem;
     color: var(--base);
-    opacity: .5;
+    opacity: 0.5;
 }
-.none_found{
+.none_found {
     margin-top: 2rem;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
 }
-.none_found *{
+.none_found * {
     color: var(--base);
 }
 </style>

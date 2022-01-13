@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, reactive } from 'vue'
+import { ref, watch, onMounted, reactive, Ref } from 'vue'
+import throttle from 'lodash/throttle';
 
 const adding_sum = ref(false)
 const subject_inpt = ref('')
 const school_inpt = ref('')
 const sum_name_inpt = ref('')
+var dragover_file_area = ref(false)
+var dropped_file_successfully = ref(false)
+const file = ref()
+const file_count = ref(0)
+const progress = ref(0)
+const form: Ref<HTMLFormElement | undefined> = ref()
 
-interface subject{
+interface subject {
     name: string,
     id: number
 }
@@ -22,10 +29,10 @@ var options: options = reactive({
 })
 
 async function load_data() {
-    const res = await fetch(`/api/addSumValues/`, {
+    const res = await fetch(`/api/SumValues/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify({ 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
             subject: subject_inpt.value,
             school: school_inpt.value
         })
@@ -38,6 +45,69 @@ async function load_data() {
     // adding all the options to options
     options = Object.assign(options, result)
 
+}
+
+
+async function submitSum() {
+    console.log('submitting sum', form.value)
+    const fd = new FormData(form.value)
+    fd.append('usertoken',localStorage.token)
+    var ajaxRequest = new XMLHttpRequest()
+
+    ajaxRequest.upload.addEventListener(
+        'progress', throttle((event) => {
+            var prgrs = event.loaded / event.total
+            progress.value = Math.round(prgrs * 100)
+            console.log('making progress',progress.value)
+        }, 1000, { leading: true, trailing: true })
+    )
+
+    ajaxRequest.addEventListener('load', async (event)=>{
+        console.log('upload complete')
+        if(ajaxRequest.status == 200){
+            form.value?.reset()
+        }else{
+            window.alert("Sth went wrong... Try again later")
+        }
+        if(file.value){
+            file.value.files = null
+            file_count.value = file.value.files.length
+        }
+        setTimeout(()=>{
+            progress.value = 0
+        }, 1000)
+    })
+    ajaxRequest.open('POST', '/api/upload_sum')
+    ajaxRequest.send(fd)
+}
+
+async function handlefile() {
+    console.log('handling file:', file.value.files.length, file.value.files)
+    file_count.value = file.value.files.length
+}
+
+async function dragenter() {
+    if (!dragover_file_area.value) {
+        dragover_file_area.value = true
+        console.log('dragenter:', dragover_file_area.value)
+    }
+}
+async function dragleave() {
+    if (dragover_file_area.value) {
+        dragover_file_area.value = false
+        console.log('dragleave:', dragover_file_area.value)
+    }
+}
+async function dropped_file(e: DragEvent) {
+    dragover_file_area.value = false
+    // e.preventDefault()
+    var dropped_files = e.dataTransfer?.files.length == 1 ? e.dataTransfer.files : []
+    if (dropped_files) {
+        console.log('dropped file', dropped_files)
+        file.value.files = dropped_files
+        dropped_file_successfully.value = true
+        handlefile()
+    }
 }
 
 onMounted(load_data)
@@ -63,7 +133,14 @@ watch(school_inpt, (old_school, new_school) => {
             <span>{{ adding_sum ? '-' : '+' }}</span> Zusammenfassung hinzufügen
         </label>
         <div id="adding_sum_container">
-            <form id="create_sum_form">
+            <form
+                id="create_sum_form"
+                action="/api/upload_sum"
+                method="post"
+                ref="form"
+                enctype="multipart/form-data"
+                @submit.prevent="submitSum()"
+            >
                 <div class="dropdown_menu">
                     <select
                         name="subject"
@@ -71,8 +148,11 @@ watch(school_inpt, (old_school, new_school) => {
                         class="dropdown_input"
                         v-model="subject_inpt"
                     >
-                        <option value selected disabled>Fachauswahl</option>
-                        <option v-for="subject in options.subjects" :value="subject.id">{{ subject.name }}</option>
+                        <option value selected>Fachauswahl (kein Fach ausgewählt)</option>
+                        <option
+                            v-for="subject in options.subjects"
+                            :value="subject.id"
+                        >{{ subject.name }}</option>
                     </select>
                 </div>
                 <div class="dropdown_menu">
@@ -82,7 +162,7 @@ watch(school_inpt, (old_school, new_school) => {
                         class="dropdown_input"
                         v-model="school_inpt"
                     >
-                        <option value selected disabled>Schule</option>
+                        <option value selected>Schule (keine Schule ausgewählt)</option>
                         <option v-for="school in options.schools" :value="school">{{ school }}</option>
                     </select>
                 </div>
@@ -98,11 +178,75 @@ watch(school_inpt, (old_school, new_school) => {
                     />
                     <label class="sum_inpt_label" for="sum_name_inpt">Name der Zusammenfassung</label>
                 </div>
+                <div
+                    class="sum_inpt_group"
+                    :class="
+                    dragover_file_area ? 'dragover' : dropped_file_successfully ? 'dropped' : ''
+                    "
+                    @dragover.prevent
+                    @dragenter="dragenter"
+                    @dragleave="dragleave"
+                    @drop.prevent="dropped_file($event)"
+                >
+                    <input
+                        ref="file"
+                        name="sum_file_inpt"
+                        id="sum_file_inpt"
+                        class="sum_inpt_file"
+                        type="file"
+                        required
+                        autocomplete="off"
+                        @change="handlefile"
+                    />
+                    <label class="file_upload_icon" for="sum_file_inpt">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <title>Browse Files</title>
+                            <path
+                                d="M 6 2 C 4.9057453 2 4 2.9057453 4 4 L 4 20 C 4 21.094255 4.9057453 22 6 22 L 18 22 C 19.094255 22 20 21.094255 20 20 L 20 8 L 14 2 L 6 2 z M 6 4 L 13 4 L 13 9 L 18 9 L 18 20 L 6 20 L 6 4 z"
+                            />
+                        </svg>
+                        <div class="file_count" v-if="file_count > 0">{{ file_count }}</div>
+                    </label>
+                </div>
+                <div class="sum_inpt_group">
+                    <input type="submit" value="Senden" id="submitSum" />
+                    <label for="submitSum" id="SubmitSumLabel" :style="`--progress:${progress};`">
+                        Senden
+                    </label>
+                </div>
             </form>
         </div>
     </div>
 </template>
 <style scoped>
+#sum_file_inpt {
+    display: none;
+    transform: scale(0);
+}
+.dragover {
+    border-color: var(--base) !important;
+}
+.dropped {
+    border-color: rgb(60, 255, 0) !important;
+}
+.file_upload_icon {
+    width: 50px;
+    height: 50px;
+    fill: var(--base);
+    /* stroke-linecap: round;
+    stroke-linejoin: round; */
+    transition: background 1s, color 1s, box-shadow 0.2s, transform 0.2s,
+        fill 0.2s;
+}
+.file_upload_icon:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+}
+.file_count {
+    position: absolute;
+    top: 15px;
+    left: calc(50% - 5px);
+}
 .add_summary {
     --pad: calc(var(--scale) * 2rem);
     transition: background 1s, color 1s, box-shadow 0.2s, padding 0.2s,
@@ -153,6 +297,9 @@ watch(school_inpt, (old_school, new_school) => {
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 3px solid transparent;
+    border-radius: 5px;
+    position: relative;
 }
 .sum_inpt_group * {
     font-size: 1.1rem;
@@ -202,5 +349,39 @@ watch(school_inpt, (old_school, new_school) => {
 .dropdown_menu option[selected] {
     background: var(--base);
     color: var(--anit_base);
+}
+#submitSum {
+    display: none;
+}
+#SubmitSumLabel{
+    --progress: 0;
+    border: none;
+    color: var(--base);
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    margin: 1rem 0 0 0;
+    box-shadow: 0 0 5px var(--box_shadows);
+    font-weight: 900;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+#SubmitSumLabel:hover{
+    cursor: pointer;
+}
+#SubmitSumLabel::before{
+    content: '';
+    z-index: -1;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 172, 0, 0.788);
+    transform-origin: left;
+    transform: scaleX(calc(var(--progress)/100));
+    transition: transform .5s ease-in-out;
 }
 </style>

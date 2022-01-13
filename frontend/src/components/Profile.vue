@@ -41,10 +41,14 @@ const props = defineProps<Properties>();
 .user_info {
     box-shadow: 0 0 15px var(--box_shadows_dark);
     border-radius: 5px;
+    margin-top: 50px;
 }
 .profile_component {
     margin-top: 1.5rem;
     font-size: 1.2rem;
+}
+.profile_headline{
+    margin-top: 10px;
 }
 #profile_top {
     display: flex;

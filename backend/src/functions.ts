@@ -41,13 +41,13 @@ export function sign_refresh_token(sub: string, secret: string = '') {
 }
 
 interface VerifyedAccessToken {
-    sub?: string|JwtPayload,
+    sub?: string | JwtPayload,
     is_creator?: boolean
 }
-export function verify_access_token(token: string): Array<string|boolean|undefined|JwtPayload> {
+export function verify_access_token(token: string): Array<string | boolean | undefined | JwtPayload> {
     try {
         const data: VerifyedAccessToken = jsonwebtoken.verify(token, ACCESS_TOKEN_SECRET);
-        const { sub, is_creator } = data  
+        const { sub, is_creator } = data
         return [sub, is_creator]
     } catch (e) {
         return ['', false]
@@ -64,7 +64,7 @@ interface UserDetails {
     avg_rating: number,
     nSummaries: number,
     is_creator: boolean
-  }
+}
 
 export async function userProfileInfo(sub: string | any): Promise<UserDetails[]> {
     const res = await pool.query(`
@@ -86,4 +86,8 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
     `, [sub])
     const result = res.rows
     return result
+}
+
+export async function addNewSum(filename: string, sum_name: string, subject: string, school: string, creator: string) {
+
 }

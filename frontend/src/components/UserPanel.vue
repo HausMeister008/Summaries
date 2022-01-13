@@ -3,7 +3,7 @@ import { defineProps } from 'vue'
 
 export interface Properties {
     name: string,
-    nSummaries: number,
+    nSummaries: string,
     ID: number,
     avatar?: string
 }
