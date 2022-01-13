@@ -23,7 +23,7 @@ interface options {
     schools: string[]
 }
 
-var options: options = reactive({
+const options: options = reactive({
     subjects: [],
     schools: [],
 })
@@ -43,8 +43,7 @@ async function load_data() {
     //     schools: ['Kant-Gymnasium Weil am Rhein']
     //   }
     // adding all the options to options
-    options = Object.assign(options, result)
-
+    Object.assign(options, result)
 }
 
 
