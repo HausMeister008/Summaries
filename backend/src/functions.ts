@@ -88,6 +88,68 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
     return result
 }
 
-export async function addNewSum(filename: string, sum_name: string, subject: string, school: string, creator: string) {
+export async function getUserID(user: string): Promise<number> {
+    var res = await pool.query('select id from users where username = $1', [user])
+    return parseInt(res.rows.length == 1 ? res.rows[0].id : 0)
+}
 
+export async function getCreatorID(creator: string): Promise<number | undefined> {
+    var retval = parseInt((await pool.query(`
+    select creator.id 
+    from users, creator 
+    where username = $1
+    and users.id = creator.userID
+    `, [creator])).rows[0].id)
+    return retval
+}
+
+export interface addData {
+    filename: string | undefined,
+    sum_name: string | undefined,
+    subject: string | undefined,
+    [school:string]: string | undefined,
+    token: string
+}
+export async function addNewSum(add_data: addData) {
+    var sub: string | undefined | JwtPayload | boolean | number = verify_access_token(add_data.token)
+    var creator = await getCreatorID(sub[0])
+    pool.query(`
+    insert into summaries (creator, subject_id, sumname, sumfilename)
+    values ($1, $2, $3, $4)
+    `, [creator, add_data.subject, add_data.sum_name, add_data.filename])
+}
+
+
+export async function checkSumAccess(userID: number, sumID: number): Promise<boolean> {
+    var res = await pool.query(`
+        select 
+        (case when 
+            (select 1 from saccess 
+              where summaries.id=saccess.summary 
+              and saccess.userid = $1
+              limit 1) = 1 then TRUE else FALSE END
+            ) as "saccess"
+        from summaries 
+        where summaries.id = $2
+    `, [userID, sumID])
+
+    return res.rows.length == 1 ? res.rows[0].saccess : false
+}
+
+interface fileNames {
+    name: string,
+    filename: string
+}
+
+export async function getSumName(sumID: number): Promise<fileNames> {
+    var res = await pool.query(`
+        select 
+        sumfilename, sumname
+        from summaries 
+        where id = $1
+    `, [sumID])
+
+    var name = res.rows.length == 1 ? res.rows[0].sumname : ''
+    var filename = res.rows.length == 1 ? res.rows[0].sumfilename : ''
+    return { name, filename }
 }

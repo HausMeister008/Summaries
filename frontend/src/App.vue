@@ -6,17 +6,23 @@ import { ref, onMounted } from "vue";
 import TopNavigation from "./components/TopNavigation.vue";
 const display_modes = {
   dark:
-    `--base: black; 
-      --anti_base: white; 
-      --box_shadows: #ccc; 
+    `--base: #000; 
+      --anti_base: #ddd; 
+      --box_shadows: #bcbcbc; 
       --box_shadows_dark: #bbb;
-      --top_nav_bg:#333;`,
+      --top_nav_bg:#333;
+      --button_color_light: #fff;
+      --button_color_dark: #ddd;
+      --button_bg: #f9f9f9;`,
   light:
-    `--base: white; 
+    `--base: #fff; 
       --anti_base: #111;
       --box_shadows: #050505;
       --box_shadows_dark: #000; 
-      --top_nav_bg:#444;`
+      --top_nav_bg:#444;
+      --button_color_light: #000;
+      --button_color_dark: #222;
+      --button_bg: #090909;`
 }
 const display_mode = ref(localStorage.display_mode ?? 'DarkMode')
 const display_values = ref('')
@@ -37,7 +43,7 @@ onMounted(() => {
 
 <template>
   <top-navigation></top-navigation>
-  <router-view v-slot="{ Component, route }" >
+  <router-view v-slot="{ Component, route }">
     <transition name="slide" mode="out-in" appear>
       <component :is="Component" :key="route.path" />
     </transition>
@@ -82,7 +88,7 @@ button {
   color: var(--anti_base);
   background: var(--base);
 }
-.page{
+.page {
   width: 100%;
   height: calc(100vh - var(--nav_height));
   z-index: 9;
@@ -91,22 +97,24 @@ button {
   position: absolute;
   font-size: 1.2rem;
   font-weight: 600;
-  padding: 0.5rem 1.5rem;
-  border: 2px solid transparent;
+  padding: 0.75rem 1.5rem;
+  border: none;
   border-radius: 30px;
   color: var(--base);
-  background: var(--box_shadows);
-  box-shadow: 0 5px 10px var(--box_shadows_dark);
-  transition: opacity 0.2s;
-  bottom: 1rem;
-  right: 1rem;
-  opacity: 0.7;
+  background: var(--button_bg);
+  box-shadow: 
+  -5px -5px 20px var(--button_color_light),
+  5px 5px 10px var(--button_color_dark),
+  inset -2px -2px 5px var(--button_color_light),
+  inset 2px 2px 5px var(--button_color_dark);
+  transition: all 1s;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  /* opacity: 0.7; */
   z-index: 20;
-  transition: box-shadow 0.2s;
 }
 #light_dark_button:hover {
   cursor: pointer;
-  opacity: 0.9;
 }
 .slide-enter-from {
   transform: translateY(-10%);

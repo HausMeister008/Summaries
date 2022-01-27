@@ -5,6 +5,10 @@ const pwd_inpt = ref('')
 const firstname_inpt = ref('')
 const lastname_inpt = ref('')
 const creator_account_inpt = ref(false)
+
+const registered = ref(false)
+const user_exists = ref(false)
+
 async function register() {
     // console.log(username_inpt.value, pwd_inpt.value)
     var response = await fetch(
@@ -24,6 +28,12 @@ async function register() {
         })
     var result = await response.json()
     console.log(result)
+    if(result.success) {
+        registered.value = true
+    }
+    else if(result.user_exists){
+        user_exists.value = true
+    }
 }
 </script>
 
@@ -88,10 +98,26 @@ async function register() {
                     type="checkbox"
                     autocomplete="off"
                 />
-                <label class="lgn_label_checkbox" for="creator_account"><span>Creator-Account</span></label>
+                <label class="lgn_label_checkbox" for="creator_account">
+                    <span>Creator-Account</span>
+                </label>
             </div>
             <input type="submit" class="submit_form" value="Register" />
+            <router-link to="/userprofile" class="logged_in" v-if="registered">
+                Registration Erfolgreich
+                <br />Zum Profil
+                <span class="loggedin_link_symbol">></span>
+            </router-link>
+            <div class="user_exists" v-if="user_exists">
+                <h3>Dieser Benutzername ist bereits vergeben</h3>
+            </div>
         </form>
-        <div class="logged_in">Logged in</div>
     </div>
 </template>
+
+<style scoped>
+.user_exists{
+    margin-top: 1.5rem;
+    color: rgb(214, 57, 57);
+}
+</style>

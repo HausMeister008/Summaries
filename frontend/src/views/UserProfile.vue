@@ -29,7 +29,6 @@ onMounted(get_user_data)
 <template>
     <div class="userprofile page">
         <user-profile
-            class="user_profile_info"
             v-if="user_info[0]"
             :username="user_info[0].username"
             :firstname="user_info[0].firstname"
@@ -46,17 +45,6 @@ onMounted(get_user_data)
 .userprofile{
     position: relative;
     margin-top: var(--nav_height);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-.user_profile_info {
-    color: var(--base);
-    background: var(--anti_base);
-    padding: 2rem 4rem;
-    position: relative;
-    text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;

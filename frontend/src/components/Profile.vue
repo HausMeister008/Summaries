@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import AddSum from './AddSum.vue'
+import {ref} from 'vue'
 export interface Properties {
     username: string,
     nSummaries: string,
@@ -12,6 +12,7 @@ export interface Properties {
 }
 
 const props = defineProps<Properties>();
+
 </script>
 <template>
     <div class="user_info">
@@ -39,9 +40,19 @@ const props = defineProps<Properties>();
 </template>
 <style scoped>
 .user_info {
+    min-height: 250px;
     box-shadow: 0 0 15px var(--box_shadows_dark);
     border-radius: 5px;
     margin-top: 50px;
+    color: var(--base);
+    background: var(--anti_base);
+    padding: 2rem 4rem;
+    position: relative;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 .profile_component {
     margin-top: 1.5rem;

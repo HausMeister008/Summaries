@@ -172,15 +172,20 @@ const lgn_or_rgstr = ref(true)
     opacity: 0.5;
 }
 .submit_form {
-    margin-top: 1em;
-    font-size: 1em;
+    margin-top: 2em;
+    font-size: 1.2em;
+    border-radius: 5px;
+    padding: .5rem 1rem;
     font-weight: 600;
     background: transparent;
+    box-shadow: 0 0 5px var(--box_shadows);
     border: none;
     color: var(--base);
+    transition: all .2s;
 }
 .submit_form:hover {
     cursor: pointer;
+    transform: scale(1.05);
 }
 .checkbox_input {
     display: none;
@@ -226,19 +231,34 @@ const lgn_or_rgstr = ref(true)
     align-items: center;
 }
 .logged_in {
-    position: absolute;
-    font-size: 2em;
+    text-decoration: none;
+    margin-top: 2rem;
+    font-size: 1.3em;
     font-weight: 900;
     background: var(--base);
     color: var(--anti_base);
     padding: 0.5rem 1rem;
     border-radius: 5px;
     box-shadow: 0 0 15px var(--box_shadows_dark);
-    transform: scale(0);
-    opacity: 0;
 }
-.logged_in .shown {
-    transform: scale(1);
-    opacity: 1;
+.loggedin_link_symbol{
+    transition: all .2s;
+}
+
+.logged_in:hover > .loggedin_link_symbol{
+    margin-left: 5px;
+}
+
+.lgn_rgstr_conf_fade-enter-from {
+  opacity: 0;
+  transform: scale(0);
+}
+.lgn_rgstr_conf_fade-leave-to {
+  opacity: 0;
+  transform: scale(0);
+}
+.lgn_rgstr_conf_fade-leave-active,
+.lgn_rgstr_conf_fade-enter-active {
+  transition: all  0.4s;
 }
 </style>

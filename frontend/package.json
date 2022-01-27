@@ -12,6 +12,8 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/vue-fontawesome": "^3.0.0-5",
     "lodash": "^4.17.21",
+    "mime": "^3.0.0",
+    "path": "^0.12.7",
     "sass": "^1.43.4",
     "vue": "^3.2.22",
     "vue-router": "^4.0.12"

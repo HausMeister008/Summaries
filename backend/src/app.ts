@@ -1,4 +1,4 @@
-import express, { query } from "express";
+import express, { application, query } from "express";
 import { Pool } from "pg";
 // https://node-postgres.com/
 const app = express();
@@ -13,7 +13,9 @@ import multyparty from 'multiparty'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
 import fs from 'fs'
-import { verify_access_token } from "./functions";
+import { addData } from "./functions";
+import path from "path";
+import mime from "mime"
 
 
 const pool = new Pool({
@@ -69,25 +71,32 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.get('/api/userdetails/:id/:token', async (req, res) => {
-  const id = req.params.id
+  const creator_id = req.params.id
   const token: string = req.params.token
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
-  if (sub == '') {
+  if (!sub || sub == '') {
     res.send({ success: false })
     return
   }
+  const user_id = await functions.getUserID(sub.toString())
   const details = await pool.query(`
     select 
-      summaries.id, 
-      sumname,
+      summaries.id,
+      sumname, 
       subject_name,
       subject_year,
       school_name,
       location_name,
       "Date",
       coalesce(avg(rating), 0) as "rating",
-      coalesce(count(rating), 0) as "ratingamount"
+      coalesce(count(rating), 0) as "ratingamount",
+      (case when 
+        (select 1 from saccess 
+          where summaries.id=saccess.summary 
+          and saccess.userid = $2
+          limit 1) = 1 then TRUE else FALSE END
+        ) as "saccess"
     from
       users
       join creator on (users.id = creator.userID)
@@ -98,7 +107,7 @@ app.get('/api/userdetails/:id/:token', async (req, res) => {
       join locations on (schools.school_plz = locations.plz )
     where users.id = $1
     group by summaries.id, subjects.subject_name, subjects.subject_year, schools.school_name,locations.location_name
-    `, [id]
+    `, [creator_id, user_id]
   )
   const userinfo = details.rows
   details.rows.forEach(row => {
@@ -112,7 +121,9 @@ interface queryRetVal {
 }
 
 app.post('/api/register', async (req, res) => {
-  const default_avatars = ['headphones_small.jpg', 'study.jpg', 'studying_with_laptop.jpg']
+  const default_avatars = [
+    'headphones_small.jpg', 'study.jpg', 'studying_with_laptop.jpg', 'headphones_white.jpg'
+  ]
   const default_avatar = default_avatars[Math.floor(Math.random() * default_avatars.length)]
   const { username, pwd, firstname, lastname, creator_account } = req.body
   const hashed_pwd = await functions.hash_pwd(pwd)
@@ -226,30 +237,28 @@ app.post('/api/SumValues/', async (req, res) => {
 })
 
 
-interface addData {
-  filename?: string,
-  [sum_name: string]: string | undefined,
-  subject?: string,
-  school?: string,
-  creator?: string
-}
 
 app.post('/api/upload_sum', (req, res) => {
   console.log('uploading new sum')
-  var add_data: addData = {}
+  var add_data: addData = {
+    token: '',
+    filename: undefined,
+    sum_name: undefined,
+    subject: undefined
+  }
   try {
     const form = new multyparty.Form()
     const responses: Array<Promise<{ error?: any, filename: string }>> = []
     var response_data: { success: boolean, files: string[] } = { success: false, files: [] }
     form.on('part', (part) => {
-      add_data.filename = part.filename
       if (!part.filename) {
         // console.log('part without filename:', part.name)
         return
       }
       const save_name = nanoid() + part.filename
+      add_data.filename = save_name
       // const resizePipeline = sharp()
-      console.info('part headers', part.headers)
+      // console.info('part headers', part.headers)
       const writer = fs.createWriteStream(`./Uploads/${save_name}`)
       return responses.push(
         new Promise((resolve, reject) => {
@@ -265,32 +274,18 @@ app.post('/api/upload_sum', (req, res) => {
               response_data.files.push(save_name)
               // Only if all are done
               resolve({ filename: part.filename })
-              console.log('finish', add_data)
-              Promise.allSettled(responses).then(data => {
-                res.status(200).json(response_data)
-              })
-                .catch(err => {
-                  console.log(err.message)
-                })
+              console.log('finish')
             })
         })
       )
     })
-    form.on('field',async(name,value)=> {
-      console.log(name)
+    form.on('field', async (name, value) => {
       if (["subject", "school"].includes(name)) {
-        add_data.name = value
-      }else if ("sum_name_inpt"==name){
+        add_data[name] = value as "subject" | "school"
+      } else if ("sum_name_inpt" == name) {
         add_data.sum_name = value
-      }else if('usertoken'==name){
-        var sub:string|undefined|JwtPayload|boolean = await functions.verify_access_token(value)
-        sub = sub[0]
-        console.log(sub)
-        if (typeof(sub)=="string"){
-          add_data.creator = sub
-        }else{
-          add_data.creator = ''
-        }
+      } else if ('usertoken' == name) {
+        add_data.token = value
       }
     })
     form.on('progress', (received, total) => {
@@ -299,6 +294,13 @@ app.post('/api/upload_sum', (req, res) => {
     form.on('close', () => {
       // aperantly not emmitted when only using form.parse without cb
       console.info('form was closed')
+      functions.addNewSum(add_data)
+      Promise.allSettled(responses).then(data => {
+        res.status(200).json(response_data)
+      })
+        .catch(err => {
+          console.log(err.message)
+        })
     })
 
     form.parse(req)
@@ -307,74 +309,48 @@ app.post('/api/upload_sum', (req, res) => {
   }
 })
 
-// app.post('/api/upload_sum', (req, res) => {
-//   console.log('uploading new sum')
-//   try {
-//     const form = new multyparty.Form()
-//     const responses: Array<Promise<{ error?: any, filename: string }>> = []
-//     var response_data: { success: boolean, files: string[] } = { success: false, files: [] }
-//     form.on('part', (part) => {
-//       if (!part.filename) {
-//         console.log('part without filename:', part.name)
-//         return
-//       }
-//       const save_name = nanoid() + part.filename
-//       // const resizePipeline = sharp()
-//       console.info('part headers', part.headers)
-//       const writer = fs.createWriteStream(`src/Uploads/${save_name}`)
-//       return responses.push(
-//         new Promise((resolve, reject) => {
-//           part
-//             // .pipe(resizePipeline)
-//             .pipe(writer)
-//             .on('error', (error) => {
-//               console.log(error.message)
-//               reject({ filename: save_name, error: error })
-//             })
-//             .on('finish', () => {
-//               response_data.success = true
-//               response_data.files.push(save_name)
-//               resolve({ filename: save_name })
-//             })
-//         })
-//       )
-//     })
-//     form.on('progress', (received, total) => {
-//       console.log('progress:', received / total)
-//     })
-//     form.on('close', () => {
-//       console.info('form was closed')
-//       // Only if all are done
-//       Promise.allSettled(responses).then(data => {
-//         console.log('All promises settled - sending results')
-//         res.status(200).json(response_data)
-//       })
-//         .catch(err => {
-//           console.log(err.message)
-//         })
-//     })
 
-//     form.parse(req, (err, fields, files:retfiles) => {
-//       if (err) {
-//         console.log(err.message)
-//         return
-//       }
-//       if (fields) {
-//         console.log(fields)
-//         if (files) {
-//           let k:keyof typeof files
-//           for (k in files){
-//             files[k].forEach(file =>{
-//               console.log(`File ${file.originalFilename} has been added`)
-//             })
-//           }
-//         }
-//       }
-//     })
-//   } catch (e) {
-//     console.log(e)
-//   }
-// })
+app.post('/api/getsum', async (req, res) => {
+  const { token, sumId } = req.body
+
+  const token_content = functions.verify_access_token(token)
+  const sub = token_content[0]
+  if (sub) {
+    const user: number = typeof (sub) == "string" ? await functions.getUserID(sub) : 0
+    const access = user ? await functions.checkSumAccess(user, sumId) : false
+    if(access){
+      const {filename, name} = await functions.getSumName(sumId)
+      const filePath = path.join(__dirname, `../Uploads/${filename}`)
+      console.log(filePath, `${name}.${filename.split('.')[1]}` )
+      // res.download(filePath, `${name}.${filename.split('.')[1]}` )
+      fs.access(filePath, fs.constants.F_OK, (err)=>{
+        console.log(`${filePath} ${err ? 'does not exist' : 'exists'}`)
+      })
+      fs.readFile(filePath, (err,content)=>{
+        if(err){
+          res.send(404).json({access:true, existant: false})
+        }else{
+          var ext = mime.getType(filePath)
+          console.log(ext)
+          res.writeHead(200, {"Content-Type": ext??'text/plain'})
+          res.end(content)
+        }
+      })
+    }
+    else{
+      res.json({access: false})
+    }
+  }
+  else{
+    res.status(500).json({access: false})
+    return
+  }
+
+})
+
+
+
+
 
 const port = 8080
 const server = app.listen(port, () => {

@@ -1,5 +1,4 @@
 <!-- <script setup lang="ts">
-import { defineProps } from 'vue'
 
 export interface Properties {
     specific_style?: string

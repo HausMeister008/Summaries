@@ -37,6 +37,14 @@
                         <p>Ort: {{ sum.location_name }}</p>
                         <p>Klassenstufe {{ sum.subject_year }}</p>
                     </div>
+                    <div class="download_container">
+                        <button
+                            class="download"
+                            :class="sum.saccess ? 'downloadable' : 'not_downloadable'"
+                            @click="download_sum(sum.id)"
+                            :title="sum.saccess ? 'Download' : 'No Access'"
+                        >🡇</button>
+                    </div>
                 </label>
             </div>
             <div v-else class="no_sums">
@@ -57,7 +65,8 @@ interface JsonEncodedSummary {
     subject_year: number,
     school_name: string,
     location_name: string,
-    ratingamount: string
+    ratingamount: string,
+    saccess: boolean
 }
 
 interface Summary extends Omit<JsonEncodedSummary, 'Date'> {
@@ -98,6 +107,27 @@ export default defineComponent({
             const response = await fetch(`/api/userdetails/${this.id}/${localStorage.token}`)
             const jsonFromResponse: Array<JsonEncodedSummary> = await response.json()
             this.usersums = jsonFromResponse.map((jsonEncodedSummary) => ({ ...jsonEncodedSummary, Date: new Date(jsonEncodedSummary.Date), rating_num: jsonEncodedSummary?.rating ?? 0 }))
+            console.log(this.usersums)
+        },
+        async download_sum(sum_id: number) {
+            var res = await fetch('/api/getsum', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    token: localStorage.token,
+                    sumId: sum_id
+                })
+            })
+            console.log(res)
+
+            // var result = await res.json()
+            // console.log(result)
+            // if(result.access){
+            //     var reader = res.body?.getReader()
+            //     console.log(reader)
+            // }
         }
     },
     created() {
@@ -112,11 +142,12 @@ export default defineComponent({
     }
 })
 </script>
-<style>
+<style scoped>
 #username_hdln {
     color: var(--base);
 }
 .user_detail_panel {
+    --download_button_width: 75px;
     position: relative;
     margin-top: var(--nav_height);
     width: 100%;
@@ -131,7 +162,7 @@ export default defineComponent({
     width: 100%;
     display: flex;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
 }
 .userinfo {
@@ -163,14 +194,15 @@ export default defineComponent({
     padding: 0;
     background: var(--anti_base);
     box-shadow: 0 0 15px var(--box_shadows);
-    border-radius: 5px;
+    border-radius: 5px 0 0 5px;
     overflow: hidden;
     transition: background 1s, color 1s, transform 0.2s, box-shadow 0.2s,
-    height 0.2s;
+        height 0.2s;
     font-size: 1.1rem;
+    z-index: 2;
 }
-.user_sum + .user_sum{
-    margin-top: 1rem;
+.infos + .infos {
+    margin-top: 2rem;
 }
 .user_sum_info,
 .detail_info {
@@ -192,6 +224,12 @@ export default defineComponent({
 
 .detail_info {
     top: var(--initial-height);
+}
+
+.user_sum_info,
+.detail_info {
+    margin-left: var(--download_button_width);
+    width: calc(100% - var(--download_button_width));
 }
 .user_sum_checkbox:checked ~ .user_sum {
     height: calc(var(--initial-height) * 2);
@@ -259,5 +297,32 @@ export default defineComponent({
     box-shadow: 0 0 15px var(--box_shadows_dark);
     padding: 0.5rem 1rem;
     border-radius: 5px;
+}
+
+.download_container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: var(--download_button_width);
+}
+
+.download {
+    position: relative;
+    border-radius: 0 5px 5px 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: var(--anti_base);
+    color: var(--base);
+    font-size: 1.5rem;
+}
+.download.downloadable:hover {
+    cursor: pointer;
+    background: rgba(0, 189, 0, 0.534);
+}
+.download.not_downloadable:hover {
+    cursor: pointer;
+    background: rgba(68, 68, 68, 0.534);
 }
 </style>

@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 const username_inpt = ref('')
 const pwd_inpt = ref('')
 const route = useRoute()
-var logged_in = false
+const logged_in = ref(false)
 async function login() {
     // console.log(username_inpt.value, pwd_inpt.value)
     var response = await fetch(`/api/login`, {
@@ -23,8 +23,8 @@ async function login() {
         localStorage.token = result.user_token
         token.value = result.user_token
         //swith to profile here
-        logged_in = true
-        console.log(logged_in)
+        logged_in.value = true
+        console.log(logged_in.value)
     }
 }
 </script>
@@ -57,7 +57,12 @@ async function login() {
                 <label class="lgn_label" for="lgn_pwd">Passwort</label>
             </div>
             <input type="submit" class="submit_form" value="Login" />
+            <transition name="lgn_rgstr_conf_fade" appear>
+                <router-link to="/userprofile" class="logged_in" v-if="logged_in">
+                    Eingeloggt! Zum Profil
+                    <span class="loggedin_link_symbol">></span>
+                </router-link>
+            </transition>
         </form>
-        <div class="logged_in" :class="logged_in?'shown':''">Logged in</div>
     </div>
 </template>
