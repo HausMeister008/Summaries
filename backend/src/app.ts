@@ -309,48 +309,32 @@ app.post('/api/upload_sum', (req, res) => {
   }
 })
 
-
-app.post('/api/getsum', async (req, res) => {
-  const { token, sumId } = req.body
+app.get('/api/getsum/:token/:sumId', async (req, res) => {
+  const sumId = typeof(req.params.sumId)=="string"?parseInt(req.params.sumId):0
+  const token:string = typeof(req.params.token)=="string"?req.params.token:''
 
   const token_content = functions.verify_access_token(token)
   const sub = token_content[0]
   if (sub) {
     const user: number = typeof (sub) == "string" ? await functions.getUserID(sub) : 0
     const access = user ? await functions.checkSumAccess(user, sumId) : false
-    if(access){
-      const {filename, name} = await functions.getSumName(sumId)
+    if (access) {
+
+      const { filename, name } = await functions.getSumName(sumId)
       const filePath = path.join(__dirname, `../Uploads/${filename}`)
-      console.log(filePath, `${name}.${filename.split('.')[1]}` )
-      // res.download(filePath, `${name}.${filename.split('.')[1]}` )
-      fs.access(filePath, fs.constants.F_OK, (err)=>{
-        console.log(`${filePath} ${err ? 'does not exist' : 'exists'}`)
-      })
-      fs.readFile(filePath, (err,content)=>{
-        if(err){
-          res.send(404).json({access:true, existant: false})
-        }else{
-          var ext = mime.getType(filePath)
-          console.log(ext)
-          res.writeHead(200, {"Content-Type": ext??'text/plain'})
-          res.end(content)
-        }
-      })
+
+      res.sendFile(filePath)
     }
-    else{
-      res.json({access: false})
+    else {
+      res.json({ access: false })
     }
   }
-  else{
-    res.status(500).json({access: false})
+  else {
+    res.status(404).json({ access: false })
     return
   }
 
 })
-
-
-
-
 
 const port = 8080
 const server = app.listen(port, () => {

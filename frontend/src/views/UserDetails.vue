@@ -41,7 +41,7 @@
                         <button
                             class="download"
                             :class="sum.saccess ? 'downloadable' : 'not_downloadable'"
-                            @click="download_sum(sum.id)"
+                            @click="download_sum(sum.id, sum.sumname)"
                             :title="sum.saccess ? 'Download' : 'No Access'"
                         >🡇</button>
                     </div>
@@ -109,25 +109,26 @@ export default defineComponent({
             this.usersums = jsonFromResponse.map((jsonEncodedSummary) => ({ ...jsonEncodedSummary, Date: new Date(jsonEncodedSummary.Date), rating_num: jsonEncodedSummary?.rating ?? 0 }))
             console.log(this.usersums)
         },
-        async download_sum(sum_id: number) {
-            var res = await fetch('/api/getsum', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 
-                    token: localStorage.token,
-                    sumId: sum_id
-                })
-            })
-            console.log(res)
+        async download_sum(sum_id: number, filename:string) {
+            // request to the server to check access and then send file
+            var res = await fetch(`/api/getsum/${localStorage.token}/${sum_id}`)
+            try{
+                var js_info = await res.json()
+                if (js_info && !js_info.access){
+                    alert('Not downloadable')
+                }
 
-            // var result = await res.json()
-            // console.log(result)
-            // if(result.access){
-            //     var reader = res.body?.getReader()
-            //     console.log(reader)
-            // }
+            }catch{
+                if(res.url){
+                    var url = res.url
+                    var element = document.createElement('a');
+                    element.setAttribute('href',url);
+                    element.setAttribute('download', filename);
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                }
+            }
         }
     },
     created() {
