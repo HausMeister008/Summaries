@@ -6,6 +6,7 @@ const adding_sum = ref(false)
 const subject_inpt = ref('')
 const school_inpt = ref('')
 const sum_name_inpt = ref('')
+const sum_restricted_access_inpt = ref(false)
 var dragover_file_area = ref(false)
 var dropped_file_successfully = ref(false)
 const file = ref()
@@ -177,6 +178,17 @@ watch(school_inpt, (old_school, new_school) => {
                     />
                     <label class="sum_inpt_label" for="sum_name_inpt">Name der Zusammenfassung</label>
                 </div>
+                <div class="sum_inpt_group">
+                    <input
+                        v-model="sum_restricted_access_inpt"
+                        name="sum_restricted_access_inpt"
+                        id="sum_access_inpt"
+                        class="sum_inpt checkbox"
+                        type="checkbox"
+                        autocomplete="off"
+                    />
+                    <label class="sum_inpt_label" for="sum_access_inpt">Zugriff einschränken</label>
+                </div>
                 <div
                     class="sum_inpt_group"
                     :class="
@@ -276,19 +288,8 @@ watch(school_inpt, (old_school, new_school) => {
     /* transform-origin: top; */
 }
 
-.sum_inpt {
-    width: 100%;
-    border: none;
-    outline: none;
-    border-bottom: #aaa 2px solid;
-    padding: 0 0.5rem;
-    transition: border-bottom-color 0.2s;
-    color: var(--base);
-}
-.sum_inpt:focus,
-.sum_inpt:valid {
-    border-bottom-color: var(--base);
-}
+
+
 .sum_inpt_group {
     width: 50%;
     min-width: 300px;
@@ -309,6 +310,68 @@ watch(school_inpt, (old_school, new_school) => {
     margin-top: 1.2rem;
 }
 
+.sum_inpt {
+    width: 100%;
+    border: none;
+    outline: none;
+    border-bottom: #aaa 2px solid;
+    padding: 0 0.5rem;
+    transition: border-bottom-color 0.2s;
+    color: var(--base);
+}
+.sum_inpt.checkbox{
+    width: auto;
+
+}
+
+.sum_inpt.checkbox {
+    display: none;
+    outline: none;
+    margin: 0 0.5rem;
+}
+.sum_inpt.checkbox:checked {
+    background: var(--base);
+    color: var(--anti_base);
+}
+.sum_inpt.checkbox:hover {
+    cursor: pointer;
+    transform: scale(1.1);
+}
+.sum_inpt.checkbox ~ .sum_inpt_label {
+    pointer-events: all;
+    padding-left: 2em;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sum_inpt.checkbox ~ .sum_inpt_label::before {
+    content: "\2713";
+    font-size: 0.8em;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: 0.5em;
+    width: 1rem;
+    height: 1rem;
+    background: var(--anti_base);
+    color: var(--anti_base);
+    border-radius: 5px;
+    border: 1px solid var(--base);
+    transition: color 0.1s, background 1s;
+}
+.sum_inpt.checkbox:checked ~ .sum_inpt_label::before {
+    color: var(--base);
+}
+.sum_inpt.checkbox_group {
+    justify-content: left;
+    align-items: center;
+}
+.sum_inpt:focus,
+.sum_inpt:valid {
+    border-bottom-color: var(--base);
+}
 .sum_inpt_label {
     position: absolute;
     color: #777;
@@ -324,6 +387,15 @@ watch(school_inpt, (old_school, new_school) => {
     font-size: 0.75em;
     color: var(--base);
     opacity: 0.5;
+}
+
+.sum_inpt.checkbox ~ .sum_inpt_label{
+    position: relative;
+}
+
+.sum_inpt.checkbox:focus ~ .sum_inpt_label, .sum_inpt.checkbox:valid ~ .sum_inpt_label  {
+    top: 0;
+    font-size: 1.1rem;
 }
 .dropdown_menu {
     margin-top: 1.2rem;

@@ -108,15 +108,17 @@ export interface addData {
     sum_name: string | undefined,
     subject: string | undefined,
     [school:string]: string | undefined,
-    token: string
+    token: string,
+    grant_access: string|undefined
 }
 export async function addNewSum(add_data: addData) {
     var sub: string | undefined | JwtPayload | boolean | number = verify_access_token(add_data.token)
     var creator = await getCreatorID(sub[0])
+    console.log('restrict access:', add_data.grant_access=='restrict'??false)
     pool.query(`
-    insert into summaries (creator, subject_id, sumname, sumfilename)
-    values ($1, $2, $3, $4)
-    `, [creator, add_data.subject, add_data.sum_name, add_data.filename])
+    insert into summaries (creator, subject_id, sumname, sumfilename, restricted)
+    values ($1, $2, $3, $4, $5)
+    `, [creator, add_data.subject, add_data.sum_name, add_data.filename, add_data.grant_access=='restrict'??false])
 }
 
 
@@ -125,12 +127,18 @@ export async function checkSumAccess(userID: number, sumID: number): Promise<boo
         select 
         (case when 
             (select 1 from saccess 
-              where summaries.id=saccess.summary 
+              where s.id=saccess.summary 
               and saccess.userid = $1
-              limit 1) = 1 then TRUE else FALSE END
+              limit 1) = 1 or 
+              (select restricted 
+                from summaries 
+                where summaries.id = s.id
+                limit 1
+                )=false 
+                then TRUE else FALSE END
             ) as "saccess"
-        from summaries 
-        where summaries.id = $2
+        from summaries s
+        where s.id = $2
     `, [userID, sumID])
 
     return res.rows.length == 1 ? res.rows[0].saccess : false
@@ -152,4 +160,11 @@ export async function getSumName(sumID: number): Promise<fileNames> {
     var name = res.rows.length == 1 ? res.rows[0].sumname : ''
     var filename = res.rows.length == 1 ? res.rows[0].sumfilename : ''
     return { name, filename }
+}
+
+
+export async function add_access(sum_id: number, userid: number){
+    pool.query(`
+    insert into saccess (summary, userid) values ($1, $2)
+    `, [sum_id, userid])
 }

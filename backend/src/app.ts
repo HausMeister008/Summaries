@@ -82,7 +82,7 @@ app.get('/api/userdetails/:id/:token', async (req, res) => {
   const user_id = await functions.getUserID(sub.toString())
   const details = await pool.query(`
     select 
-      summaries.id,
+      s.id,
       sumname, 
       subject_name,
       subject_year,
@@ -93,20 +93,27 @@ app.get('/api/userdetails/:id/:token', async (req, res) => {
       coalesce(count(rating), 0) as "ratingamount",
       (case when 
         (select 1 from saccess 
-          where summaries.id=saccess.summary 
-          and saccess.userid = $2
-          limit 1) = 1 then TRUE else FALSE END
+          where 
+          (s.id=saccess.summary 
+            and saccess.userid = $2)
+          limit 1) = 1 or 
+          (select restricted 
+            from summaries 
+            where summaries.id = s.id
+            limit 1
+            )=false 
+          then TRUE else FALSE END
         ) as "saccess"
     from
       users
       join creator on (users.id = creator.userID)
-      join summaries on (creator.id = summaries.creator)
-      left join ratings on (ratings.ratedSummary = summaries.id)
-      join subjects on (summaries.subject_id = subjects.id )
+      join summaries s on (creator.id = s.creator)
+      left join ratings on (ratings.ratedSummary = s.id)
+      join subjects on (s.subject_id = subjects.id )
       join schools on (subjects.subject_school = schools.id )
       join locations on (schools.school_plz = locations.plz )
     where users.id = $1
-    group by summaries.id, subjects.subject_name, subjects.subject_year, schools.school_name,locations.location_name
+    group by s.id, subjects.subject_name, subjects.subject_year, schools.school_name,locations.location_name
     `, [creator_id, user_id]
   )
   const userinfo = details.rows
@@ -244,7 +251,8 @@ app.post('/api/upload_sum', (req, res) => {
     token: '',
     filename: undefined,
     sum_name: undefined,
-    subject: undefined
+    subject: undefined,
+    grant_access: undefined
   }
   try {
     const form = new multyparty.Form()
@@ -286,10 +294,13 @@ app.post('/api/upload_sum', (req, res) => {
         add_data.sum_name = value
       } else if ('usertoken' == name) {
         add_data.token = value
+      } else if ('sum_restricted_access_inpt' == name) {
+        console.log('access', value?'restrict': 'grant')
+        add_data.grant_access = value?'restrict': 'grant'
       }
     })
     form.on('progress', (received, total) => {
-      console.log('progress:', received / total)
+      // console.log('progress:', received / total)
     })
     form.on('close', () => {
       // aperantly not emmitted when only using form.parse without cb

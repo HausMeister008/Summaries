@@ -67,6 +67,7 @@ create table "summaries"(
     "Date" timestamp with time zone default current_timestamp,
     sumname varchar not null,
     sumfilename varchar not null,
+    restricted boolean not null,
     foreign key (Creator) references creator (id) on delete cascade on update cascade,
     foreign key (subject_id) references subjects (id) on delete cascade on update cascade
     );
