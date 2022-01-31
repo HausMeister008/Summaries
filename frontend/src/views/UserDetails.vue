@@ -120,6 +120,7 @@ export default defineComponent({
 
             }catch{
                 if(res.url){
+                    console.log(res.url)
                     var url = res.url
                     var element = document.createElement('a');
                     element.setAttribute('href',url);

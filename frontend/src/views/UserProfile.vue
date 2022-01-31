@@ -38,6 +38,7 @@ onMounted(get_user_data)
             :avatar="user_info[0].avatar"
             :is_creator="user_info[0].is_creator"
         ></user-profile>
+        
     </div>
 </template>
 

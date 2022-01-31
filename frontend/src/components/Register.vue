@@ -90,6 +90,13 @@ async function register() {
                 <label class="lgn_label" for="lgn_pwd">Passwort</label>
             </div>
             <div class="login_group checkbox_input_group">
+                
+                <!-- <checkbox
+                    v-model="creator_account_inpt"
+                    name="creator_account"
+                    id="creator_account"
+                    label-text="Creator-Account"
+                /> -->
                 <input
                     v-model="creator_account_inpt"
                     name="creator_account"

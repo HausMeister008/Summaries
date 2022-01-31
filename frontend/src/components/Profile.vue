@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import AddSum from './AddSum.vue'
 import {ref} from 'vue'
+import SelectAccessUserPanel from './SelectAccessUserPanel.vue';
+
 export interface Properties {
     username: string,
     nSummaries: string,
@@ -37,6 +39,8 @@ const props = defineProps<Properties>();
         >Durchschnittliche Bewertung: {{ props.avg_rating ? props.avg_rating : 'Keine vorhanden' }}</p>
         <add-sum class="profile_component" v-if="props.is_creator"/>
     </div>
+    <select-access-user-panel></select-access-user-panel>
+
 </template>
 <style scoped>
 .user_info {

@@ -228,7 +228,7 @@ watch(school_inpt, (old_school, new_school) => {
             </form>
         </div>
     </div>
-</template>
+    </template>
 <style scoped>
 #sum_file_inpt {
     display: none;
