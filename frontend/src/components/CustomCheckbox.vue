@@ -59,6 +59,9 @@ const onClick = () => {
     justify-content: left;
     align-items: center;
 }
+.checkbox_input_group:hover{
+    cursor: pointer;
+}
 .checkbox_input {
     display: none;
     outline: none;
@@ -73,10 +76,12 @@ const onClick = () => {
     transform: scale(1.1);
 }
 .checkbox_label {
+    height: 100%;
+    width: 100%;
     padding-left: 2em;
     position: relative;
     display: flex;
-    justify-content: center;
+    justify-content: left;
     align-items: center;
 }
 .checkbox_label::before {
@@ -94,6 +99,9 @@ const onClick = () => {
     border-radius: 5px;
     border: 1px solid var(--base);
     transition: color 0.5s, background 1s;
+}
+.checkbox_label:hover{
+    cursor: pointer;
 }
 .checkbox_input:checked ~ .checkbox_label::before {
     color: var(--base);

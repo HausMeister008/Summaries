@@ -35,7 +35,7 @@ watch(username, async (newUsername, oldUsername) => {
     console.log(...a) = console.log(1,2,3,4,5) != console.log([1,2,3,4,5])
     */
 
-    const response = await fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}`)
+    const response = await fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}&onlycreators=false`)
     const result = await response.json()
     await users.splice(0, users.length, ...result)
 
@@ -118,7 +118,7 @@ onMounted(load)
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
     color: var(--base);
-    padding-top: 2rem;
+    padding: 2rem 0;
     display: grid;
     grid-template-rows: 2.5rem var(--search_height) auto;
 }
@@ -148,16 +148,21 @@ onMounted(load)
     color: var(--anti_base);
 }
 .select_access_users {
+    width: 90%;
+    margin-left: 5%;
     display: flex;
     justify-content: baseline;
     align-items: center;
     flex-direction: column;
-    padding: 2rem 0 0 0;
+    padding: 2rem 0;
+    overflow: auto;
+    scrollbar-width: thin;
+    box-shadow: inset 0px 0 15px var(--box_shadows);
+    border-radius: 5px;
 }
 #access_headline {
     width: 100%;
     height: auto;
-
     text-align: center;
 }
 #search {
@@ -208,13 +213,13 @@ onMounted(load)
     opacity: 0.5;
 }
 .to_select_user {
-    height: 100px;
+    min-height: 100px;
+    max-height: 100px;
     width: 90%;
     padding: 0;
     margin-inline: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 150px auto max-content;
     align-items: center;
     font-size: 1.1rem;
     background: var(--anti_base);
@@ -222,6 +227,12 @@ onMounted(load)
     border-radius: 5px;
     overflow: hidden;
     transition: all 1s, transform 0.2s, margin-top .5s;
+}
+.to_select_user *{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content:center;
 }
 .to_select_user:hover {
     transform: scale(1.02);
@@ -233,11 +244,9 @@ onMounted(load)
     height: 100px;
     max-width: 150px;
 }
-.checkbox_input_group {
-    margin-right: 2rem;
+.checkbox_input_group{
+    padding: 0 2rem 0 0;
 }
-/* fade_in_selection_panel */
-
 .fade_in_selection_panel-enter-from {
     transform: translateX(-10%);
     opacity: 0;

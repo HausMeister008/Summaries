@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import CustomCheckbox from '../components/CustomCheckbox.vue'
+
 const username_inpt = ref('')
 const pwd_inpt = ref('')
 const firstname_inpt = ref('')
 const lastname_inpt = ref('')
 const creator_account_inpt = ref(false)
+
 
 const registered = ref(false)
 const user_exists = ref(false)
@@ -97,17 +100,10 @@ async function register() {
                     id="creator_account"
                     label-text="Creator-Account"
                 /> -->
-                <input
-                    v-model="creator_account_inpt"
-                    name="creator_account"
-                    id="creator_account"
-                    class="checkbox_input"
-                    type="checkbox"
-                    autocomplete="off"
+                <custom-checkbox
+                v-model="creator_account_inpt"
+                label="Creator-Account"
                 />
-                <label class="lgn_label_checkbox" for="creator_account">
-                    <span>Creator-Account</span>
-                </label>
             </div>
             <input type="submit" class="submit_form" value="Register" />
             <router-link to="/userprofile" class="logged_in" v-if="registered">

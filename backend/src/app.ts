@@ -299,8 +299,8 @@ app.post('/api/upload_sum', (req, res) => {
         console.log('access', value ? 'restrict:' : 'grant')
         add_data.grant_access = value ? 'restrict' : 'grant'
       } else if ('addusers' == name) {
-        var adduser_array:number[] = (value.replaceAll('[', '').replaceAll(']', '').replaceAll(',', ' ').split(' ')).map((v: string) => { return parseInt(v) })
-        console.log('users:',...adduser_array)
+        var adduser_array: number[] = (value.replaceAll('[', '').replaceAll(']', '').replaceAll(',', ' ').split(' ')).map((v: string) => { return parseInt(v) })
+        console.log('users:', ...adduser_array)
         // var adduser_array = typeof (adduser_array) == 'object' ?adduser_array:[1]
         add_data.addusers = adduser_array
       }
@@ -351,6 +351,23 @@ app.get('/api/getsum/:token/:sumId', async (req, res) => {
     return
   }
 
+})
+
+app.post('/api/ratesum', async (req, res) => {
+  const { sum_id, token, rating } = req.body
+  const verified_token = await functions.verify_access_token(token)
+  const sub: number = await functions.getUserID((verified_token[0] as string))
+  var access: boolean = await functions.checkSumAccess(sub, sum_id)
+  if (access && [1, 2, 3, 4, 5].includes(rating)) {
+    pool.query(`
+    insert into ratings
+    (ratedsummary, rating) 
+    values ($1, $2)
+    `, [sum_id, rating])
+    res.json({ success: true })
+  } else {
+    res.json({ success: false })
+  }
 })
 
 const port = 8080

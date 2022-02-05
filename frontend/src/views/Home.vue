@@ -26,11 +26,11 @@
             </p>
         </div>
         <div class="info_tag">
-            <h2>Für die Creator</h2>
+            <h2>An alle Creators</h2>
             <p class="explenations">
                 Ihr habt beim Hochladen die Möglichkeit, den Zugang zu euren Zusammenfassungen einzuschränken, sie also nur denjenigen zugänglich zu machen,
                 die ihr wollt. Wenn ihr zum Beispiel keinen Bock habt, eure 10 Seiten lange Geschichtszusammenfassung für einfach jeden kostenlos zugänglich zu machen,
-                könnt ihr ganz einfach sagen, dass zu Anfang keiner Zugriff hat, und jeden, der euch dann z.B. in der Schule 5€ (oder wie viel auch immer ihr wollt) gibt,
+                könnt ihr ganz einfach sagen, dass zu Anfang keiner - oder nur eure engsten Freunde - Zugriff hat, und jeden, der euch dann z.B. in der Schule 5€ (oder wie viel auch immer ihr wollt) gibt,
                 nachträglich hinzufügen. 
             </p>
         </div>
