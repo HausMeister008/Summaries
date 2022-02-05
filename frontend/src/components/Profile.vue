@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AddSum from './AddSum.vue'
-import {ref} from 'vue'
+import { ref, Ref, watch } from 'vue'
 import SelectAccessUserPanel from './SelectAccessUserPanel.vue';
 
 export interface Properties {
@@ -13,7 +13,19 @@ export interface Properties {
     is_creator: boolean
 }
 
+const showSelectedAccessUsersPanel: Ref<boolean> = ref(false)
+const restrict_access: Ref<boolean> = ref(false)
+
 const props = defineProps<Properties>();
+
+const selected_users: Ref<number[]> = ref([])
+
+watch(restrict_access, (n, o)=>{
+    console.log(n)
+    if(n){
+        showSelectedAccessUsersPanel.value = true
+    }
+})
 
 </script>
 <template>
@@ -37,10 +49,14 @@ const props = defineProps<Properties>();
             v-if="props.is_creator"
             class="profile_component"
         >Durchschnittliche Bewertung: {{ props.avg_rating ? props.avg_rating : 'Keine vorhanden' }}</p>
-        <add-sum class="profile_component" v-if="props.is_creator"/>
+        <add-sum
+            class="profile_component"
+            v-model:showRestricUsers="restrict_access"
+            :addusers="selected_users"
+            v-if="props.is_creator"
+        />
     </div>
-    <select-access-user-panel></select-access-user-panel>
-
+    <select-access-user-panel v-model:adduser_array="selected_users" v-model:show="showSelectedAccessUsersPanel" />
 </template>
 <style scoped>
 .user_info {
@@ -62,7 +78,7 @@ const props = defineProps<Properties>();
     margin-top: 1.5rem;
     font-size: 1.2rem;
 }
-.profile_headline{
+.profile_headline {
     margin-top: 10px;
 }
 #profile_top {

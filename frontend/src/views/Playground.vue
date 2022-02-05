@@ -1,25 +1,24 @@
 <template>
     <div class="page">
-        <div>
-            <!-- https://v3.vuejs.org/guide/migration/v-model.html#v-model-arguments -->
-            <custom-checkbox v-model="data.a" v-model:label="data.aLabel"></custom-checkbox>
-        </div>
-        <div>
-            B:
-            <custom-checkbox v-model="data.b"></custom-checkbox>
-        </div>
+        
+        <custom-checkbox arrayElement="1" v-model:array="data_array" label="Place1"></custom-checkbox>
+        <custom-checkbox arrayElement="2" v-model:array="data_array" label="Place2"></custom-checkbox>
+        <br>
         <div>
             C:
             <custom-checkbox v-model="data.c"></custom-checkbox>
         </div>
         <div>{{ data }}</div>
+        <div>{{ data_array }}</div>
     </div>
 </template>
 
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import CustomCheckbox from '../components/CustomCheckbox.vue'
+
+const data_array = ref([])
 
 const data = reactive({
     aLabel: 'Hier ist A',

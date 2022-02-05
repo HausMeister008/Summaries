@@ -109,16 +109,31 @@ export interface addData {
     subject: string | undefined,
     [school:string]: string | undefined,
     token: string,
-    grant_access: string|undefined
+    grant_access: string|undefined,
+    addusers: number[]|undefined,
 }
 export async function addNewSum(add_data: addData) {
     var sub: string | undefined | JwtPayload | boolean | number = verify_access_token(add_data.token)
     var creator = await getCreatorID(sub[0])
     console.log('restrict access:', add_data.grant_access=='restrict'??false)
-    pool.query(`
+    var summary_id = (await pool.query(`
     insert into summaries (creator, subject_id, sumname, sumfilename, restricted)
     values ($1, $2, $3, $4, $5)
-    `, [creator, add_data.subject, add_data.sum_name, add_data.filename, add_data.grant_access=='restrict'??false])
+    returning id
+    `, [creator, add_data.subject, add_data.sum_name, add_data.filename, add_data.grant_access=='restrict'??false])).rows[0].id
+    console.log(summary_id, add_data.addusers)
+    add_data.addusers?.forEach(user=>{
+        try{
+            pool.query(`
+            insert into saccess 
+            (summary, userid)
+            values ($1, $2)
+            `, [summary_id, user])
+        }catch(e:any){
+            console.log(e.messagge) 
+            console.log(`Not able to add user with id ${user}`)
+        }
+    })
 }
 
 

@@ -11,7 +11,7 @@ const username = ref('')
 
 
 watch(username, (newUsername, oldUsername) => {
-    fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}`)
+    fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}&onlycreators=true`)
         .then((response) => response.json())
         .then((result) => users.splice(0, users.length, ...result));
 

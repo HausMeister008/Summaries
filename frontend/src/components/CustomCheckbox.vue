@@ -2,7 +2,8 @@
     <div class="checkbox_input_group" @click="onClick()">
         <input
             type="checkbox"
-            :checked="modelValue"
+            :checked="modelValue?true:arrayElement?array?.includes(arrayElement):false"
+            :value="arrayElement"
             class="checkbox_input"
         />
         <label class="checkbox_label" >{{ label??'Checkbox' }}</label>
@@ -16,7 +17,7 @@ const props = defineProps<{
     modelValue?: boolean
     label?: string
     arrayElement?: string | number
-    array?: Array<string | number>  
+    array?: Array<string | number>
 }>();
 
 // 
@@ -24,7 +25,7 @@ const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void;
     (e: 'update:label', value: string | undefined): void;
     // work on reactive array
-    (e: 'update:array', value: boolean[]): void;
+    (e: 'update:array', value: Array<string | number>): void;
     (e: 'checked'): void;
     (e: 'unchecked'): void
 }>();
@@ -36,11 +37,18 @@ const onClick = () => {
         const neuesArray = [...props.array]
         if (neuesArray.includes(props.arrayElement)) {
             // ist schon drin! Was nun?
+            neuesArray.splice(neuesArray.indexOf(props.arrayElement), 1)
+            // neuesArray.filter(el=>{
+            //     console.log(el!=props.arrayElement)
+            //     return el!=props.arrayElement
+            // })
             // emit('update:array', neuesArray)
         } else {
+            neuesArray.push(props.arrayElement)
             // ist noch nicht drin! Was nun
             // emit('update:array', neuesArray)
         }
+        emit('update:array', neuesArray)
     }
 }
 </script> 

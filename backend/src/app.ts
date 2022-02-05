@@ -31,7 +31,7 @@ app.use(express.json())  // Hiermit kann Express JSON-Daten einlesen
 
 app.get("/api/users", async (req, res) => {
   var token: string = (typeof (req.query.token) == 'string') ? req.query.token : ''
-  var { usernameStartsWith } = req.query
+  var { usernameStartsWith, onlycreators } = req.query
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
   // const is_creator = verified_token[1]
@@ -43,7 +43,7 @@ app.get("/api/users", async (req, res) => {
     users, creator
     left join summaries on (summaries.creator = creator.id)
     where
-    users.id = creator.userID and
+    (users.id = creator.userID or not $3) and
     users.username != $1
     and (
       lower(firstname) like lower($2||'%') 
@@ -51,7 +51,7 @@ app.get("/api/users", async (req, res) => {
       or lower(concat(firstname, ' ' , lastname)) like lower($2||'%')
       )
     group by users.id
-    `, [sub, usernameStartsWith]
+    `, [sub, usernameStartsWith, onlycreators]
   )
   // var db_res = await pool.query('select * from "user";')
   var db_rows = db_res.rows
@@ -252,7 +252,8 @@ app.post('/api/upload_sum', (req, res) => {
     filename: undefined,
     sum_name: undefined,
     subject: undefined,
-    grant_access: undefined
+    grant_access: undefined,
+    addusers: undefined,
   }
   try {
     const form = new multyparty.Form()
@@ -295,8 +296,13 @@ app.post('/api/upload_sum', (req, res) => {
       } else if ('usertoken' == name) {
         add_data.token = value
       } else if ('sum_restricted_access_inpt' == name) {
-        console.log('access', value?'restrict': 'grant')
-        add_data.grant_access = value?'restrict': 'grant'
+        console.log('access', value ? 'restrict:' : 'grant')
+        add_data.grant_access = value ? 'restrict' : 'grant'
+      } else if ('addusers' == name) {
+        var adduser_array:number[] = (value.replaceAll('[', '').replaceAll(']', '').replaceAll(',', ' ').split(' ')).map((v: string) => { return parseInt(v) })
+        console.log('users:',...adduser_array)
+        // var adduser_array = typeof (adduser_array) == 'object' ?adduser_array:[1]
+        add_data.addusers = adduser_array
       }
     })
     form.on('progress', (received, total) => {
@@ -321,8 +327,8 @@ app.post('/api/upload_sum', (req, res) => {
 })
 
 app.get('/api/getsum/:token/:sumId', async (req, res) => {
-  const sumId = typeof(req.params.sumId)=="string"?parseInt(req.params.sumId):0
-  const token:string = typeof(req.params.token)=="string"?req.params.token:''
+  const sumId = typeof (req.params.sumId) == "string" ? parseInt(req.params.sumId) : 0
+  const token: string = typeof (req.params.token) == "string" ? req.params.token : ''
 
   const token_content = functions.verify_access_token(token)
   const sub = token_content[0]

@@ -1,3 +1,5 @@
+<!-- onclick only with button with checkbox other functions -->
+
 <script setup lang="ts">
 
 import { ref, watch, reactive, onMounted, Ref } from 'vue'
@@ -10,23 +12,36 @@ import CustomCheckbox from '../components/CustomCheckbox.vue'
 
 const username = ref('')
 const users: UserProperties[] = reactive([])
-const addusers: Ref<string[]> = ref([])
+const addusers: Ref<number[]> = ref([])
 
+const props = defineProps<{
+    show: boolean,
+    adduser_array:Array<number>
+}>();
+
+const emit = defineEmits<{
+    (e: 'update:show', value: boolean): void;
+    (e: 'update:adduser_array', value: number[]): void;
+}>();
+
+const onClick = () => {
+    emit('update:show', !props.show);
+    console.log(addusers.value)
+    emit('update:adduser_array', addusers.value);
+}
 watch(username, async (newUsername, oldUsername) => {
     /*
     const a = [1,2,3,4,5]
     console.log(...a) = console.log(1,2,3,4,5) != console.log([1,2,3,4,5])
     */
-    
+
     const response = await fetch(`/api/users?token=${localStorage.token}&usernameStartsWith=${encodeURIComponent(newUsername)}`)
     const result = await response.json()
     await users.splice(0, users.length, ...result)
-    addusers.value.splice(0, addusers.value.length)
-    console.log(users)
 
 })
-watch(addusers, (n,o)=>{
-    console.log(n)
+watch(addusers, (n, o) => {
+    // console.log(...n.filter(x=>!o.includes(x)))
 })
 
 // function adduser(id:number, checked:boolean){
@@ -38,27 +53,21 @@ watch(addusers, (n,o)=>{
 //         else return 
 //     }
 // }
-function tellme(){
-    console.log('tellme')
-}
 
-const load = () => fetch(`/api/users?token=${localStorage.token}`)
+const load = () => fetch(`/api/users?token=${localStorage.token}&onlycreators=false`)
     .then((response) => response.json())
     .then((result) => users.splice(0, users.length, ...result));
-    console.log(users)
 
 onMounted(load)
-
-
-const checkedNames: Ref<string[]> = ref([])
 //const checkedNames: string[] = reactive([])
 </script>
 
 <template>
-
-    <div class="access_user_form">
-        <h1 id="access_headline">Grant Access</h1>
-        <!-- {{ addusers }}
+    <transition name="fade_in_selection_panel">
+        <div class="access_user_form" v-if="show">
+            <button id="close_access_user_form" @click="onClick">🗙</button>
+            <h1 id="access_headline">Grant Access</h1>
+            <!-- {{ addusers }}
         <div id="v-model-multiple-checkboxes">
         <input type="checkbox" id="jack" value="Jack" v-model="checkedNames" />
         <label for="jack">Jack</label>
@@ -68,62 +77,75 @@ const checkedNames: Ref<string[]> = ref([])
         <label for="mike">Mike</label>
         <br />
         <span>Checked names: {{ checkedNames }}</span>
-        </div> -->
+            </div>-->
 
-
-        <div id="search">
-            <input id="searchBar" type="search" v-model="username" required />
-            <label id="searchBarLabel" for="searchBar">Suche...</label>
-        </div> 
+            <div id="search">
+                <input id="searchBar" type="search" v-model="username" required />
+                <label id="searchBarLabel" for="searchBar">Suche...</label>
+            </div>
             <!-- <div>Du suchst nach {{ username }}</div> -->
-        
 
             <div class="select_access_users" v-if="users">
                 <div class="to_select_user" v-for="user in users" :key="user.ID">
                     <img
-                    :src="'/src/assets/images/' + user.avatar"
-                    :alt="user.name.charAt(0)"
-                    class="user_avatar"
-                />
-                <p>{{ user.name }}</p>
-                <div class="checkbox_input_group">
+                        :src="'/src/assets/images/' + user.avatar"
+                        :alt="user.name.charAt(0)"
+                        class="user_avatar"
+                    />
+                    <p>{{ user.name }}</p>
                     <!--
                         bind the same array to multiple checkboxes, and have it filled with the checked items:
                         https://v3.vuejs.org/guide/forms.html#checkbox
                     -->
-                    <input
-                        :id="'adduser' + user.ID"
-                        class="checkbox_input"
-                        type="checkbox"
-                        :value="user.ID.toString()"
-                        v-model="addusers"
-                    />
-                    <label :for="'adduser' + user.ID" class="checkbox_label">Hinzufügen</label>
-                    <custom-checkbox 
-                    v-model:array="addusers"
-                    :array-element="user.ID"
-                    label="Hinzufügen"
-                    />
+                    <custom-checkbox
+                        class="checkbox_input_group"
+                        v-model:array="addusers"
+                        :array-element="user.ID"
+                        label="Hinzufügen"
+                    ></custom-checkbox>
                 </div>
-
             </div>
         </div>
-    
-    </div>
+    </transition>
 </template>
 
 <style scoped>
-
 .access_user_form {
     position: absolute;
     width: 70%;
     height: 90%;
     background: var(--anti_base);
     box-shadow: 0 0 15px var(--box_shadows);
+    border-radius: 5px;
     color: var(--base);
     padding-top: 2rem;
     display: grid;
     grid-template-rows: 2.5rem var(--search_height) auto;
+}
+#close_access_user_form {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.5rem;
+    padding: 0 0 0.25rem 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--anti_base);
+    color: var(--base);
+    opacity: 0.5;
+    border: none;
+    border-radius: 5px;
+    display: grid;
+    align-content: center;
+    transition: 1s all, opacity 0.2s, transform 0.2s, color 0.2s;
+}
+#close_access_user_form:hover {
+    cursor: pointer;
+    opacity: 1;
+    transform: scale(1.1);
+    background: rgba(255, 0, 0, 0.5);
+    color: var(--anti_base);
 }
 .select_access_users {
     display: flex;
@@ -199,7 +221,7 @@ const checkedNames: Ref<string[]> = ref([])
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
     overflow: hidden;
-    transition: all 1s, transform 0.2s;
+    transition: all 1s, transform 0.2s, margin-top .5s;
 }
 .to_select_user:hover {
     transform: scale(1.02);
@@ -211,5 +233,21 @@ const checkedNames: Ref<string[]> = ref([])
     height: 100px;
     max-width: 150px;
 }
+.checkbox_input_group {
+    margin-right: 2rem;
+}
+/* fade_in_selection_panel */
 
+.fade_in_selection_panel-enter-from {
+    transform: translateX(-10%);
+    opacity: 0;
+}
+.fade_in_selection_panel-leave-to {
+    transform: translateX(30%);
+    opacity: 0;
+}
+.fade_in_selection_panel-leave-active,
+.fade_in_selection_panel-enter-active {
+    transition: transform 0.4s, opacity 0.4s;
+}
 </style>

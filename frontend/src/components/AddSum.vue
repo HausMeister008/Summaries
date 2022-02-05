@@ -2,6 +2,8 @@
 import { ref, watch, onMounted, reactive, Ref } from 'vue'
 import throttle from 'lodash/throttle';
 
+import CustomCheckbox from '../components/CustomCheckbox.vue'
+
 const adding_sum = ref(false)
 const subject_inpt = ref('')
 const school_inpt = ref('')
@@ -29,6 +31,23 @@ const options: options = reactive({
     schools: [],
 })
 
+const props = defineProps<{
+    showRestricUsers: boolean,
+    addusers: number[]
+}>();
+
+const emit = defineEmits<{
+    (e: 'update:showRestricUsers', value: boolean): void;
+}>();
+
+const onClick = () => {
+    emit('update:showRestricUsers', props.showRestricUsers);
+}
+const addAdditionalUsers=async ()=>{
+    await emit('update:showRestricUsers', false);
+    emit('update:showRestricUsers', true);
+
+}
 async function load_data() {
     const res = await fetch(`/api/SumValues/`, {
         method: 'POST',
@@ -51,7 +70,9 @@ async function load_data() {
 async function submitSum() {
     console.log('submitting sum', form.value)
     const fd = new FormData(form.value)
+    fd.set('sum_restricted_access_inpt', JSON.stringify(props.showRestricUsers))
     fd.append('usertoken',localStorage.token)
+    fd.append('addusers', JSON.stringify(props.addusers))
     var ajaxRequest = new XMLHttpRequest()
 
     ajaxRequest.upload.addEventListener(
@@ -66,6 +87,7 @@ async function submitSum() {
         console.log('upload complete')
         if(ajaxRequest.status == 200){
             form.value?.reset()
+            emit('update:showRestricUsers', false);
         }else{
             window.alert("Sth went wrong... Try again later")
         }
@@ -178,16 +200,14 @@ watch(school_inpt, (old_school, new_school) => {
                     />
                     <label class="sum_inpt_label" for="sum_name_inpt">Name der Zusammenfassung</label>
                 </div>
-                <div class="sum_inpt_group">
-                    <input
-                        v-model="sum_restricted_access_inpt"
-                        name="sum_restricted_access_inpt"
-                        id="sum_access_inpt"
-                        class="sum_inpt checkbox"
-                        type="checkbox"
-                        autocomplete="off"
+                <div class="sum_inpt_group" >
+                    <custom-checkbox
+                    @click="onClick"
+                    v-model="showRestricUsers"
+                    label="Zugriff einschränken"
                     />
-                    <label class="sum_inpt_label" for="sum_access_inpt">Zugriff einschränken</label>
+                    <span id="adduseramount" v-if="addusers">({{addusers.length}})</span>
+                    <button id="open_access_user_window" @click.prevent="addAdditionalUsers">+</button>
                 </div>
                 <div
                     class="sum_inpt_group"
@@ -319,55 +339,6 @@ watch(school_inpt, (old_school, new_school) => {
     transition: border-bottom-color 0.2s;
     color: var(--base);
 }
-.sum_inpt.checkbox{
-    width: auto;
-
-}
-
-.sum_inpt.checkbox {
-    display: none;
-    outline: none;
-    margin: 0 0.5rem;
-}
-.sum_inpt.checkbox:checked {
-    background: var(--base);
-    color: var(--anti_base);
-}
-.sum_inpt.checkbox:hover {
-    cursor: pointer;
-    transform: scale(1.1);
-}
-.sum_inpt.checkbox ~ .sum_inpt_label {
-    pointer-events: all;
-    padding-left: 2em;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.sum_inpt.checkbox ~ .sum_inpt_label::before {
-    content: "\2713";
-    font-size: 0.8em;
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    left: 0.5em;
-    width: 1rem;
-    height: 1rem;
-    background: var(--anti_base);
-    color: var(--anti_base);
-    border-radius: 5px;
-    border: 1px solid var(--base);
-    transition: color 0.1s, background 1s;
-}
-.sum_inpt.checkbox:checked ~ .sum_inpt_label::before {
-    color: var(--base);
-}
-.sum_inpt.checkbox_group {
-    justify-content: left;
-    align-items: center;
-}
 .sum_inpt:focus,
 .sum_inpt:valid {
     border-bottom-color: var(--base);
@@ -389,14 +360,6 @@ watch(school_inpt, (old_school, new_school) => {
     opacity: 0.5;
 }
 
-.sum_inpt.checkbox ~ .sum_inpt_label{
-    position: relative;
-}
-
-.sum_inpt.checkbox:focus ~ .sum_inpt_label, .sum_inpt.checkbox:valid ~ .sum_inpt_label  {
-    top: 0;
-    font-size: 1.1rem;
-}
 .dropdown_menu {
     margin-top: 1.2rem;
 }
@@ -454,5 +417,29 @@ watch(school_inpt, (old_school, new_school) => {
     transform-origin: left;
     transform: scaleX(calc(var(--progress)/100));
     transition: transform .5s ease-in-out;
+}
+
+#adduseramount{
+    background: var(--anit_base);
+    color: var(--base);  
+    margin: 0 0 0 .2rem;  
+}
+#open_access_user_window{
+    background: var(--anit_base);
+    color: var(--base);
+    border: 1px solid var(--base);
+    border-radius: 5px;
+    margin: 0 0 0 1rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: grid;
+    align-content: center;
+    outline: none;
+    transition: all 1s, background .5s, color .5s;
+}
+#open_access_user_window:hover{
+    cursor: pointer;
+    background: var(--base);
+    color: var(--anti_base);
 }
 </style>
