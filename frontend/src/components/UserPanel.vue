@@ -65,6 +65,8 @@ const props = defineProps<Properties>();
   font-size: 1.2em;
 }
 .profile_image {
+  object-fit: cover;
+  height: 100%;
   width: 150px;
 }
 </style>

@@ -63,7 +63,7 @@
                         </transition>
                         <button
                             class="rate"
-                            title="Bewerten"
+                            :title="sum.saccess ?'Bewerten':'Nicht bewertbar'"
                             :class="sum.saccess ? 'ratable' : 'not_ratable'"
                             @click="sum.show_rating = !sum.show_rating"
                         >★</button>
@@ -447,12 +447,12 @@ export default defineComponent({
 }
 .show_rating_container-enter-from {
     opacity: 0;
-    transform: translateX(-2rem);
+    transform: translateY(var(--bubble_distance));
 }
 
 .show_rating_container-leave-to{
     opacity: 0;
-    transform: translateX(1rem);
+    transform: translateY(calc(-1*var(--bubble_distance)));
 }
 
 .show_rating_container-leave-active,

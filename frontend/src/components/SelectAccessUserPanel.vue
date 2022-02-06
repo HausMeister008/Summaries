@@ -241,7 +241,8 @@ onMounted(load)
     margin-top: 1.5rem;
 }
 .user_avatar {
-    height: 100px;
+    object-fit: cover;
+    height: 100%;
     max-width: 150px;
 }
 .checkbox_input_group{

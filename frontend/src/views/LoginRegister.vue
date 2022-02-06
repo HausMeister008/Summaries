@@ -12,8 +12,10 @@ const lgn_or_rgstr = ref(true)
             <span>Register</span>
             <span>Login</span>
         </label>
-        <login-form v-if="lgn_or_rgstr"></login-form>
-        <register-form v-else></register-form>
+        <transition :name="lgn_or_rgstr?'to_login': 'to_register'" mode="out-in">
+            <login-form v-if="lgn_or_rgstr"></login-form>
+            <register-form v-else></register-form>
+        </transition>
     </div>
 </template>
 
@@ -93,6 +95,28 @@ const lgn_or_rgstr = ref(true)
 }
 #lgn_or_rgstr:checked ~ #lgn_or_rgstr_label span:last-child {
     color: var(--base);
+}
+.to_login-enter-from {
+  opacity: 0;
+  transform: translateX(-3rem);
+}
+.to_login-leave-to {
+  opacity: 0;
+  transform: translateX(3rem);
+}
+.to_register-enter-from {
+  opacity: 0;
+  transform: translateX(3rem);
+}
+.to_register-leave-to {
+  opacity: 0;
+  transform: translateX(-3rem);
+}
+.to_login-leave-active,
+.to_login-enter-active,
+.to_register-leave-active,
+.to_register-enter-active {
+  transition: all  0.3s;
 }
 </style>
 
@@ -261,4 +285,6 @@ const lgn_or_rgstr = ref(true)
 .lgn_rgstr_conf_fade-enter-active {
   transition: all  0.4s;
 }
+
+
 </style>
