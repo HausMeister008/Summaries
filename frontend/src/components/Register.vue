@@ -31,10 +31,27 @@ async function register() {
         })
     var result = await response.json()
     console.log(result)
-    if(result.success) {
-        registered.value = true
+    if (result.success) {
+        var response = await fetch(`/api/login`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username_inpt.value,
+                pwd: pwd_inpt.value
+            })
+        })
+        const token = ref(localStorage.token)
+        var result = await response.json()
+        if (result.success) {
+            localStorage.token = result.user_token
+            token.value = result.user_token
+            //swith to profile here
+            registered.value = true
+        }
     }
-    else if(result.user_exists){
+    else if (result.user_exists) {
         user_exists.value = true
     }
 }
@@ -93,17 +110,13 @@ async function register() {
                 <label class="lgn_label" for="lgn_pwd">Passwort</label>
             </div>
             <div class="login_group checkbox_input_group">
-                
                 <!-- <checkbox
                     v-model="creator_account_inpt"
                     name="creator_account"
                     id="creator_account"
                     label-text="Creator-Account"
-                /> -->
-                <custom-checkbox
-                v-model="creator_account_inpt"
-                label="Creator-Account"
-                />
+                />-->
+                <custom-checkbox v-model="creator_account_inpt" label="Creator-Account" />
             </div>
             <input type="submit" class="submit_form" value="Register" />
             <router-link to="/userprofile" class="logged_in" v-if="registered">
@@ -119,7 +132,7 @@ async function register() {
 </template>
 
 <style scoped>
-.user_exists{
+.user_exists {
     margin-top: 1.5rem;
     color: rgb(214, 57, 57);
 }

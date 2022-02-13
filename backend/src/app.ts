@@ -295,9 +295,10 @@ app.post('/api/upload_sum', (req, res) => {
         add_data.sum_name = value
       } else if ('usertoken' == name) {
         add_data.token = value
-      } else if ('sum_restricted_access_inpt' == name) {
-        console.log('access', value ? 'restrict:' : 'grant')
-        add_data.grant_access = value ? 'restrict' : 'grant'
+      } else if ('restrict' == name) {
+        var val:boolean = value=='true'?true: false
+        console.log('access', (val ? 'restricted:' : 'granted'))
+        add_data.grant_access = typeof(val)=='boolean' ? val : true
       } else if ('addusers' == name) {
         var adduser_array: number[] = (value.replaceAll('[', '').replaceAll(']', '').replaceAll(',', ' ').split(' ')).map((v: string) => { return parseInt(v) })
         console.log('users:', ...adduser_array)
@@ -358,14 +359,18 @@ app.post('/api/ratesum', async (req, res) => {
   const verified_token = await functions.verify_access_token(token)
   const sub: number = await functions.getUserID((verified_token[0] as string))
   var access: boolean = await functions.checkSumAccess(sub, sum_id)
-  if (access && [1, 2, 3, 4, 5].includes(rating)) {
-    pool.query(`
-    insert into ratings
-    (ratedsummary, rating) 
-    values ($1, $2)
-    `, [sum_id, rating])
-    res.json({ success: true })
-  } else {
+  if (!await functions.check_already_rated(sum_id, sub)) {
+    if (access && [1, 2, 3, 4, 5].includes(rating)) {
+      pool.query(`
+      insert into ratings
+      (ratedsummary, rating, rating_user) 
+      values ($1, $2, $3)
+      `, [sum_id, rating, sub])
+      res.json({ success: true })
+    } else {
+      res.json({ success: false })
+    }
+  }else{
     res.json({ success: false })
   }
 })

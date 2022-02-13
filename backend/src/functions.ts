@@ -107,33 +107,36 @@ export interface addData {
     filename: string | undefined,
     sum_name: string | undefined,
     subject: string | undefined,
-    [school:string]: string | undefined,
+    [school: string]: string | undefined,
     token: string,
-    grant_access: string|undefined,
-    addusers: number[]|undefined,
+    grant_access: boolean | undefined,
+    addusers: number[] | undefined,
 }
 export async function addNewSum(add_data: addData) {
     var sub: string | undefined | JwtPayload | boolean | number = verify_access_token(add_data.token)
     var creator = await getCreatorID(sub[0])
-    console.log('restrict access:', add_data.grant_access=='restrict'??false)
+    console.log('restrict access:', add_data.grant_access)
     var summary_id = (await pool.query(`
     insert into summaries (creator, subject_id, sumname, sumfilename, restricted)
     values ($1, $2, $3, $4, $5)
     returning id
-    `, [creator, add_data.subject, add_data.sum_name, add_data.filename, add_data.grant_access=='restrict'??false])).rows[0].id
+    `, [creator, add_data.subject, add_data.sum_name, add_data.filename, add_data.grant_access])).rows[0].id
     console.log(summary_id, add_data.addusers)
-    add_data.addusers?.forEach(user=>{
-        try{
-            pool.query(`
+    if (add_data.addusers?.[0]) {
+        console.log('adding users whith access')
+        add_data.addusers?.forEach(user => {
+            try {
+                pool.query(`
             insert into saccess 
             (summary, userid)
             values ($1, $2)
             `, [summary_id, user])
-        }catch(e:any){
-            console.log(e.messagge) 
-            console.log(`Not able to add user with id ${user}`)
-        }
-    })
+            } catch (e: any) {
+                console.log(e.messagge)
+                console.log(`Not able to add user with id ${user}`)
+            }
+        })
+    }
 }
 
 
@@ -178,8 +181,21 @@ export async function getSumName(sumID: number): Promise<fileNames> {
 }
 
 
-export async function add_access(sum_id: number, userid: number){
+export async function add_access(sum_id: number, userid: number) {
     pool.query(`
     insert into saccess (summary, userid) values ($1, $2)
     `, [sum_id, userid])
+}
+
+
+export async function check_already_rated(sum_id: number, user_id: number): Promise<boolean> {
+    var res = await pool.query(`
+    select * from ratings 
+    where ratedsummary = $1 
+    and rating_user = $2
+    `, [sum_id, user_id])
+
+    var already_rated: boolean = res.rows.length >= 1
+    console.log('already rated:', already_rated)
+    return already_rated
 }

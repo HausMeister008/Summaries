@@ -43,7 +43,7 @@ const emit = defineEmits<{
 const onClick = () => {
     emit('update:showRestricUsers', props.showRestricUsers);
 }
-const addAdditionalUsers=async ()=>{
+const addAdditionalUsers = async () => {
     await emit('update:showRestricUsers', false);
     emit('update:showRestricUsers', true);
 
@@ -70,8 +70,9 @@ async function load_data() {
 async function submitSum() {
     console.log('submitting sum', form.value)
     const fd = new FormData(form.value)
-    fd.set('sum_restricted_access_inpt', JSON.stringify(props.showRestricUsers))
-    fd.append('usertoken',localStorage.token)
+    console.log('restrict', props.showRestricUsers)
+    fd.set('restrict', JSON.stringify(props.showRestricUsers))
+    fd.append('usertoken', localStorage.token)
     fd.append('addusers', JSON.stringify(props.addusers))
     var ajaxRequest = new XMLHttpRequest()
 
@@ -79,28 +80,29 @@ async function submitSum() {
         'progress', throttle((event) => {
             var prgrs = event.loaded / event.total
             progress.value = Math.round(prgrs * 100)
-            console.log('making progress',progress.value)
+            console.log('making progress', progress.value)
         }, 1000, { leading: true, trailing: true })
     )
 
-    ajaxRequest.addEventListener('load', async (event)=>{
+    ajaxRequest.addEventListener('load', async (event) => {
         console.log('upload complete')
-        if(ajaxRequest.status == 200){
+        if (ajaxRequest.status == 200) {
             form.value?.reset()
             emit('update:showRestricUsers', false);
-        }else{
+        } else {
             window.alert("Sth went wrong... Try again later")
         }
-        if(file.value){
+        if (file.value) {
             file.value.files = null
             file_count.value = file.value.files.length
         }
-        setTimeout(()=>{
+        setTimeout(() => {
             progress.value = 0
         }, 1000)
     })
     ajaxRequest.open('POST', '/api/upload_sum')
     ajaxRequest.send(fd)
+
 }
 
 async function handlefile() {
@@ -169,6 +171,7 @@ watch(school_inpt, (old_school, new_school) => {
                         id="select_subject_dropdown"
                         class="dropdown_input"
                         v-model="subject_inpt"
+                        required
                     >
                         <option value selected>Fachauswahl (kein Fach ausgewählt)</option>
                         <option
@@ -182,6 +185,7 @@ watch(school_inpt, (old_school, new_school) => {
                         name="school"
                         id="select_school_dropdown"
                         class="dropdown_input"
+                        required
                         v-model="school_inpt"
                     >
                         <option value selected>Schule (keine Schule ausgewählt)</option>
@@ -200,19 +204,19 @@ watch(school_inpt, (old_school, new_school) => {
                     />
                     <label class="sum_inpt_label" for="sum_name_inpt">Name der Zusammenfassung</label>
                 </div>
-                <div class="sum_inpt_group" >
+                <div class="sum_inpt_group">
                     <custom-checkbox
-                    @click="onClick"
-                    v-model="showRestricUsers"
-                    label="Zugriff einschränken"
+                        @click="onClick"
+                        v-model="showRestricUsers"
+                        label="Zugriff einschränken"
                     />
-                    <span id="adduseramount" v-if="addusers">({{addusers.length}})</span>
+                    <span id="adduseramount" v-if="addusers">({{ addusers.length }})</span>
                     <button id="open_access_user_window" @click.prevent="addAdditionalUsers">+</button>
                 </div>
                 <div
                     class="sum_inpt_group"
                     :class="
-                    dragover_file_area ? 'dragover' : dropped_file_successfully ? 'dropped' : ''
+                        dragover_file_area ? 'dragover' : dropped_file_successfully ? 'dropped' : ''
                     "
                     @dragover.prevent
                     @dragenter="dragenter"
@@ -241,14 +245,16 @@ watch(school_inpt, (old_school, new_school) => {
                 </div>
                 <div class="sum_inpt_group">
                     <input type="submit" value="Senden" id="submitSum" />
-                    <label for="submitSum" id="SubmitSumLabel" :style="`--progress:${progress};`">
-                        Senden
-                    </label>
+                    <label
+                        for="submitSum"
+                        id="SubmitSumLabel"
+                        :style="`--progress:${progress};`"
+                    >Senden</label>
                 </div>
             </form>
         </div>
     </div>
-    </template>
+</template>
 <style scoped>
 #sum_file_inpt {
     display: none;
@@ -307,8 +313,6 @@ watch(school_inpt, (old_school, new_school) => {
     transform: scale(var(--scale));
     /* transform-origin: top; */
 }
-
-
 
 .sum_inpt_group {
     width: 50%;
@@ -387,7 +391,7 @@ watch(school_inpt, (old_school, new_school) => {
 #submitSum {
     display: none;
 }
-#SubmitSumLabel{
+#SubmitSumLabel {
     --progress: 0;
     border: none;
     color: var(--base);
@@ -402,11 +406,11 @@ watch(school_inpt, (old_school, new_school) => {
     position: relative;
     overflow: hidden;
 }
-#SubmitSumLabel:hover{
+#SubmitSumLabel:hover {
     cursor: pointer;
 }
-#SubmitSumLabel::before{
-    content: '';
+#SubmitSumLabel::before {
+    content: "";
     z-index: -1;
     position: absolute;
     left: 0;
@@ -415,16 +419,16 @@ watch(school_inpt, (old_school, new_school) => {
     width: 100%;
     background: rgba(0, 172, 0, 0.788);
     transform-origin: left;
-    transform: scaleX(calc(var(--progress)/100));
-    transition: transform .5s ease-in-out;
+    transform: scaleX(calc(var(--progress) / 100));
+    transition: transform 0.5s ease-in-out;
 }
 
-#adduseramount{
+#adduseramount {
     background: var(--anit_base);
-    color: var(--base);  
-    margin: 0 0 0 .2rem;  
+    color: var(--base);
+    margin: 0 0 0 0.2rem;
 }
-#open_access_user_window{
+#open_access_user_window {
     background: var(--anit_base);
     color: var(--base);
     border: 1px solid var(--base);
@@ -435,9 +439,9 @@ watch(school_inpt, (old_school, new_school) => {
     display: grid;
     align-content: center;
     outline: none;
-    transition: all 1s, background .5s, color .5s;
+    transition: all 1s, background 0.5s, color 0.5s;
 }
-#open_access_user_window:hover{
+#open_access_user_window:hover {
     cursor: pointer;
     background: var(--base);
     color: var(--anti_base);

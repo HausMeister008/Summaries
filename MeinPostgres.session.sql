@@ -30,7 +30,9 @@ create table ratings(
     id serial primary key not null, 
     ratedSummary int not null, 
     rating float not null default 5.0,
-    foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade
+    rating_user int not null,
+    foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade,
+    foreign key (rating_user) references users (id)
     );
 
 create table saccess(
