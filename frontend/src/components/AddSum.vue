@@ -313,7 +313,12 @@ watch(school_inpt, (old_school, new_school) => {
     transform: scale(var(--scale));
     /* transform-origin: top; */
 }
-
+#create_sum_form{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 .sum_inpt_group {
     width: 50%;
     min-width: 300px;

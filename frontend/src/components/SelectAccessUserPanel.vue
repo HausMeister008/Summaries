@@ -112,7 +112,7 @@ onMounted(load)
 <style scoped>
 .access_user_form {
     position: absolute;
-    width: 70%;
+    width: 80%;
     height: 90%;
     background: var(--anti_base);
     box-shadow: 0 0 15px var(--box_shadows);
