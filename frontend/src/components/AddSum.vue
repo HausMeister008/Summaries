@@ -148,14 +148,8 @@ watch(school_inpt, (old_school, new_school) => {
 <template>
     <div
         class="add_summary"
-        :style="adding_sum
-        ? 'box-shadow:0 0 15px var(--box_shadows);--scale: 1;'
-        : 'box-shadow:none;--scale: 0;'"
+        :style="'--scale: 1;'"
     >
-        <input v-model="adding_sum" type="checkbox" name="add_sum" id="add_sum" />
-        <label for="add_sum" id="add_sum_label">
-            <span>{{ adding_sum ? '-' : '+' }}</span> Zusammenfassung hinzufügen
-        </label>
         <div id="adding_sum_container">
             <form
                 id="create_sum_form"
@@ -285,12 +279,12 @@ watch(school_inpt, (old_school, new_school) => {
     left: calc(50% - 5px);
 }
 .add_summary {
-    --pad: calc(var(--scale) * 2rem);
+    --pad:2rem;
     transition: background 1s, color 1s, box-shadow 0.2s, padding 0.2s,
         height 0.5s;
     border-radius: 5px;
     padding: var(--pad);
-    height: calc(var(--scale) * 100%);
+    height: auto;
 }
 #add_sum {
     display: none;

@@ -24,27 +24,22 @@ const selected_users: Ref<number[]> = ref([])
 const show_profile_not_files: Ref<number> = ref(0)
 const middle_slide_direction: Ref<number> = ref(1)
 
-async function transition_vars(new_pos:number){
+async function transition_vars(new_pos: number) {
     var old_pos = show_profile_not_files.value
     // middle_slide_direction.value = (old_pos-new_pos)%1
-    if(new_pos==1&& new_pos>old_pos){
-        middle_slide_direction.value = 1
-        console.log('here 1')
-    }
-    else if(new_pos==1&& new_pos<old_pos){
+    if (old_pos == 1 && new_pos > old_pos) {
         middle_slide_direction.value = -1
-        console.log('here 2')
     }
-    else if(new_pos!=1&& new_pos>old_pos){
-        middle_slide_direction.value = -1
-        console.log('here 3')
-    }else if(new_pos!=1&& new_pos<old_pos){
-        console.log('right')
+    else if (old_pos == 1 && new_pos < old_pos) {
         middle_slide_direction.value = 1
-        console.log('here 4')
     }
-    console.log(old_pos, new_pos, middle_slide_direction.value)
-    show_profile_not_files.value = new_pos
+    else if (old_pos != 1 && new_pos > old_pos) {
+        middle_slide_direction.value = 1
+    } else if (old_pos != 1 && new_pos < old_pos) {
+        middle_slide_direction.value = -1
+    }
+    console.log(middle_slide_direction.value, `(${old_pos}->${new_pos})`)
+
 }
 
 
@@ -61,8 +56,10 @@ watch(restrict_access, (n, o) => {
         <div id="profile_top">
             <button
                 class="profile_image_container profile_top_button"
-                @click="transition_vars(0)"
+                @mouseenter="transition_vars(0)"
+                @click="show_profile_not_files = 0"
                 title="Mein Profil"
+                :class="show_profile_not_files == 0 ? 'active' : ''"
             >
                 <img
                     :src="props.avatar ? '/src/assets/images/' + props.avatar : '/src/assets/images/headphones_small.jpg'"
@@ -72,13 +69,16 @@ watch(restrict_access, (n, o) => {
             </button>
             <button
                 class="profile_image_container profile_top_button"
-                @click="transition_vars(1)"
+                @mouseenter="transition_vars(1)"
+                @click="show_profile_not_files = 1"
+                :class="show_profile_not_files == 1 ? 'active' : ''"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     data-v-2210c1cc
                     class="profile_image"
+                    id="edit_sums_svg"
                 >
                     <title data-v-2210c1cc>Meine Zusammenfassungen</title>
                     <path
@@ -89,15 +89,18 @@ watch(restrict_access, (n, o) => {
             </button>
             <button
                 class="profile_image_container profile_top_button"
-                @click="transition_vars(2)"
+                @mouseenter="transition_vars(2)"
+                @click="show_profile_not_files = 2"
                 title="Zusammenfassungen hochladen"
+                :class="show_profile_not_files == 2 ? 'active' : ''"
+                id="addsum_interface_button"
             >
-                ➕
+                <span class="profile_image">+</span>
             </button>
         </div>
         <transition name="change_profile_content" mode="out-in">
-            <div class="user_data" v-if="show_profile_not_files==0">
-                <h1 class="profile_headline">{{ props.firstname }} {{ props.lastname }}</h1>
+            <div class="user_data" v-if="show_profile_not_files == 0">
+                <h1 class="profile_headline profile_part_headline">{{ props.firstname }} {{ props.lastname }}</h1>
                 <p class="profile_component">Benutzername: {{ props.username }}</p>
                 <p
                     v-if="props.is_creator"
@@ -107,20 +110,23 @@ watch(restrict_access, (n, o) => {
                     v-if="props.is_creator"
                     class="profile_component"
                 >Durchschnittliche Bewertung: {{ props.avg_rating ? props.avg_rating : 'Keine vorhanden' }}</p>
+            </div>
+            <div
+                class="user_sums"
+                v-else-if="show_profile_not_files == 1"
+                :style="`--slide_direction:${middle_slide_direction}`"
+            >
+                <h1 class="profile_part_headline">Meine Zusammenfassungen</h1>
+                <my-summaries />
+            </div>
+            <div class="add_sum" v-else-if="show_profile_not_files == 2">
+                <h1 class="profile_part_headline">Zusammenfassungen hochladen</h1>
                 <add-sum
                     class="profile_component"
                     v-model:showRestricUsers="restrict_access"
                     :addusers="selected_users"
                     v-if="props.is_creator"
                 />
-            </div>
-            <div class="user_sums" v-else-if="show_profile_not_files==1" :style="`--slide_direction:${middle_slide_direction}`">
-                <h1>Meine Zusammenfassungen</h1>
-                <p>{{middle_slide_direction}}</p>
-                <my-summaries/>
-            </div>
-            <div class="add_sum" v-else-if="show_profile_not_files==2">
-                <h1>Zusammenfassungen hochladen</h1>
             </div>
         </transition>
     </div>
@@ -139,14 +145,14 @@ watch(restrict_access, (n, o) => {
     margin-top: 50px;
     color: var(--base);
     background: var(--anti_base);
-    padding: 4rem 0 0 0 ;
+    padding: 4rem 0 0 0;
     position: relative;
     text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    transition: all 1s, height .2s;
+    transition: all 1s, height 0.2s;
 }
 .profile_component {
     margin-top: 1.5rem;
@@ -154,6 +160,10 @@ watch(restrict_access, (n, o) => {
 }
 .profile_headline {
     margin-top: 10px;
+}
+.profile_part_headline{
+    position: sticky;
+    top: 0;
 }
 #profile_top {
     width: 100%;
@@ -218,8 +228,15 @@ watch(restrict_access, (n, o) => {
     transition: all 1s, transform 0.2s;
 }
 
-.user_data, .user_sums, .add_sum{
-    position:relative;
+img.profile_image{
+    filter: grayscale(1);
+    transition: all 1s, transform 0.2s, grayscale .75s;
+}
+
+.user_data,
+.user_sums,
+.add_sum {
+    position: relative;
     width: 90%;
     padding: 0 2rem 2rem 2rem;
     height: calc(80vh - var(--nav_height) - 4rem);
@@ -227,11 +244,48 @@ watch(restrict_access, (n, o) => {
     scrollbar-width: thin;
 }
 
-.user_data{
-    --slide_direction:-1;
+.user_data {
+    --slide_direction: -1;
 }
-.add_sum{
-    --slide_direction:1;
+.add_sum {
+    --slide_direction: 1;
+}
+
+#edit_sums_svg{
+    padding: .1rem;
+}
+
+#addsum_interface_button span{
+    font-size: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.profile_top_button.active > img{
+    filter: grayscale(0);
+}
+.profile_top_button > svg{
+    background: var(--anti_base);
+    fill: var(--base);
+}
+
+.profile_top_button > span{
+    color: var(--base);
+    background: var(--anti_base);
+
+}
+.profile_top_button.active > svg{
+    background: var(--base);
+    fill: var(--anti_base);
+}
+
+.profile_top_button.active > span{
+    background: var(--base);
+    color: var(--anti_base);
+
 }
 
 .profile_top_button:hover > .profile_image {
