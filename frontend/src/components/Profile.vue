@@ -2,6 +2,7 @@
 import AddSum from './AddSum.vue'
 import { ref, Ref, watch } from 'vue'
 import SelectAccessUserPanel from './SelectAccessUserPanel.vue';
+import MySummaries from './MySummaries.vue';
 
 export interface Properties {
     username: string,
@@ -20,7 +21,31 @@ const props = defineProps<Properties>();
 
 const selected_users: Ref<number[]> = ref([])
 
-const show_profile_not_files: Ref<boolean> = ref(true)
+const show_profile_not_files: Ref<number> = ref(0)
+const middle_slide_direction: Ref<number> = ref(1)
+
+async function transition_vars(new_pos:number){
+    var old_pos = show_profile_not_files.value
+    // middle_slide_direction.value = (old_pos-new_pos)%1
+    if(new_pos==1&& new_pos>old_pos){
+        middle_slide_direction.value = 1
+        console.log('here 1')
+    }
+    else if(new_pos==1&& new_pos<old_pos){
+        middle_slide_direction.value = -1
+        console.log('here 2')
+    }
+    else if(new_pos!=1&& new_pos>old_pos){
+        middle_slide_direction.value = -1
+        console.log('here 3')
+    }else if(new_pos!=1&& new_pos<old_pos){
+        console.log('right')
+        middle_slide_direction.value = 1
+        console.log('here 4')
+    }
+    console.log(old_pos, new_pos, middle_slide_direction.value)
+    show_profile_not_files.value = new_pos
+}
 
 
 watch(restrict_access, (n, o) => {
@@ -36,7 +61,8 @@ watch(restrict_access, (n, o) => {
         <div id="profile_top">
             <button
                 class="profile_image_container profile_top_button"
-                @click="show_profile_not_files = true"
+                @click="transition_vars(0)"
+                title="Mein Profil"
             >
                 <img
                     :src="props.avatar ? '/src/assets/images/' + props.avatar : '/src/assets/images/headphones_small.jpg'"
@@ -46,7 +72,7 @@ watch(restrict_access, (n, o) => {
             </button>
             <button
                 class="profile_image_container profile_top_button"
-                @click="show_profile_not_files = false"
+                @click="transition_vars(1)"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -54,16 +80,23 @@ watch(restrict_access, (n, o) => {
                     data-v-2210c1cc
                     class="profile_image"
                 >
-                    <title data-v-2210c1cc>Browse Files</title>
+                    <title data-v-2210c1cc>Meine Zusammenfassungen</title>
                     <path
                         d="M 6 2 C 4.9057453 2 4 2.9057453 4 4 L 4 20 C 4 21.094255 4.9057453 22 6 22 L 18 22 C 19.094255 22 20 21.094255 20 20 L 20 8 L 14 2 L 6 2 z M 6 4 L 13 4 L 13 9 L 18 9 L 18 20 L 6 20 L 6 4 z"
                         data-v-2210c1cc
                     />
                 </svg>
             </button>
+            <button
+                class="profile_image_container profile_top_button"
+                @click="transition_vars(2)"
+                title="Zusammenfassungen hochladen"
+            >
+                ➕
+            </button>
         </div>
         <transition name="change_profile_content" mode="out-in">
-            <div class="user_data" v-if="show_profile_not_files">
+            <div class="user_data" v-if="show_profile_not_files==0">
                 <h1 class="profile_headline">{{ props.firstname }} {{ props.lastname }}</h1>
                 <p class="profile_component">Benutzername: {{ props.username }}</p>
                 <p
@@ -81,8 +114,13 @@ watch(restrict_access, (n, o) => {
                     v-if="props.is_creator"
                 />
             </div>
-            <div class="user_sums" v-else>
-                <h1>Deine Zusammenfassungen</h1>
+            <div class="user_sums" v-else-if="show_profile_not_files==1" :style="`--slide_direction:${middle_slide_direction}`">
+                <h1>Meine Zusammenfassungen</h1>
+                <p>{{middle_slide_direction}}</p>
+                <my-summaries/>
+            </div>
+            <div class="add_sum" v-else-if="show_profile_not_files==2">
+                <h1>Zusammenfassungen hochladen</h1>
             </div>
         </transition>
     </div>
@@ -180,7 +218,7 @@ watch(restrict_access, (n, o) => {
     transition: all 1s, transform 0.2s;
 }
 
-.user_data, .user_sums{
+.user_data, .user_sums, .add_sum{
     position:relative;
     width: 90%;
     padding: 0 2rem 2rem 2rem;
@@ -189,17 +227,23 @@ watch(restrict_access, (n, o) => {
     scrollbar-width: thin;
 }
 
+.user_data{
+    --slide_direction:-1;
+}
+.add_sum{
+    --slide_direction:1;
+}
 
 .profile_top_button:hover > .profile_image {
     transform: scale(1.1);
 }
 
 .change_profile_content-enter-from {
-    transform: translateX(-10%);
+    transform: translateX(calc(10% * var(--slide_direction)));
     opacity: 0;
 }
 .change_profile_content-leave-to {
-    transform: translateX(30%);
+    transform: translateX(calc(30% * var(--slide_direction)));
     opacity: 0;
 }
 .change_profile_content-leave-active,
