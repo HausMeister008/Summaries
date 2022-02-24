@@ -77,7 +77,8 @@ interface UserDetails {
 }
 
 export async function userProfileInfo(sub: string | any): Promise<UserDetails[]> {
-    var query_text = await isCreator(sub) ?
+    const is_creator = await isCreator(sub)
+    var query_text = is_creator ?
         `
     select 
       users.id,
@@ -89,11 +90,10 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
       coalesce(count(summaries.id), 0) as "nSummaries"
     from 
       users
-      left join creator on (users.id = creator.userid)
+      join creator on (users.id = creator.userid)
       left join summaries on (summaries.creator = creator.id)
       left join ratings on (ratings.ratedSummary = summaries.id)
       where users.username = $1
-      and summaries.creator=creator.id and ratings.ratedSummary = summaries.id
       group by users.id, creator.id
     `:
     `select 
@@ -101,6 +101,7 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
     from users where users.username = $1 group by users.id`
     const res = await pool.query(query_text, [sub])
     const result = res.rows
+    console.log(is_creator, sub, result)
     // console.log(sub, result,(await pool.query(`
     // select username, count(summaries.id) as "nsums", avg(rating) as "avgrating" 
     // from users, ratings, summaries, creator 

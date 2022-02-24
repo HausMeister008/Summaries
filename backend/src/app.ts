@@ -71,10 +71,9 @@ app.get("/api/users", async (req, res) => {
 });
 
 app.get('/api/mysums', async (req, res) => {
-  console.log('loading users sums')
   const token: string = (typeof (req.query.token) == 'string') ? req.query.token : ''
-  var {sum} = req.query
-  sum = sum ?? ''
+  var searched_sum = req.query.searched_sum
+  searched_sum = searched_sum ?? ''
   const verified_token = functions.verify_access_token(token)
   const sub = verified_token[0]
   if (!sub || sub == '') {
@@ -95,29 +94,27 @@ app.get('/api/mysums', async (req, res) => {
       schools.school_name,
       locations.location_name
     from 
-      users, 
-      creator,
-      summaries, 
-      ratings,
-      subjects, 
-      schools, 
-      locations
+      users
+      join creator on (creator.userid = users.id)
+      left join summaries on(summaries.creator = creator.id)
+      join subjects on(summaries.subject_id = subjects.id)
+      left join ratings on(ratings.ratedSummary = summaries.id)
+      left join schools on(subjects.subject_school = schools.id)
+      left join locations on(schools.school_plz = locations.plz)
     where
       users.id = $1
-      and creator.userid = users.id
-      and summaries.creator = creator.id
-      and summaries.subject_id = subjects.id
-      and subjects.subject_school = schools.id
-      and schools.school_plz = locations.plz
-      and ratings.ratedSummary = summaries.id
+      and (
+        lower(sumname) like lower($2||'%')
+        or lower(subject_name) like lower($2||'%')
+        or lower(school_name) like lower($2||'%')
+        )
     group by
       summaries.id, 
       subjects.subject_name, 
       subjects.subject_year, 
       schools.school_name,
       locations.location_name
-    `, [user_id])
-    console.log(sums.rows)
+    `, [user_id, searched_sum])
     sums.rows.forEach(row => {
       row.ratingamount = parseInt(row.ratingamount)
     })

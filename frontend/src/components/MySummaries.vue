@@ -1,10 +1,56 @@
+
+<script lang="ts" setup>
+
+import { ref, reactive, watch, onMounted, Ref, toRefs} from 'vue'
+
+export interface Properties{
+    searched_sum:string
+}
+
+const props = defineProps<Properties>();
+
+const {searched_sum} = toRefs(props)
+
+interface summary {
+    id: number,
+    sumname: string,
+    rating: number,
+    ratingamount: string,
+    Date: { date: string, time: string },
+    location_name: string,
+    school_name: string,
+    subject_name: string,
+    subject_year: number
+}
+
+interface arriving_sums extends summary{
+    preProssessedDate:Date
+}
+
+const my_summaries: Array<summary> = reactive([])
+
+async function load_sums() {
+    var res = await fetch(`/api/mysums?token=${localStorage.token}&searched_sum=${encodeURIComponent(searched_sum.value)}`)
+    var result:arriving_sums[] = await res.json()
+    result.forEach(sum => {
+        var dt = new Date(sum.preProssessedDate)
+        sum.Date = {
+            date: dt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' }),
+            time: dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' }),
+        }
+    })
+    my_summaries.splice(0, my_summaries.length, ...result)
+    console.log(my_summaries)
+
+}
+onMounted(load_sums)
+watch(searched_sum, (n,o)=>{
+    load_sums()
+})
+</script>
+
 <template>
     <div class="summaries">
-        <div id="search">
-            <input id="searchBar" type="search" v-model="searched_sum" required />
-            <label id="searchBarLabel" for="searchBar">Suche...</label>
-            <!-- <div>Du suchst nach {{ username }}</div> -->
-        </div>
         <div class="summary" v-for="sum in my_summaries">
             <div class="edit_symbol">
                 <svg
@@ -37,46 +83,6 @@
         </div>
     </div>
 </template>
-
-<script lang="ts" setup>
-
-import { ref, reactive, watch, onMounted, Ref } from 'vue'
-
-interface summary {
-    id: number,
-    sumname: string,
-    rating: number,
-    ratingamount: string,
-    Date: { date: string, time: string },
-    location_name: string,
-    school_name: string,
-    subject_name: string,
-    subject_year: number
-}
-
-interface arriving_sums extends summary{
-    preProssessedDate:Date
-}
-
-const my_summaries: Array<summary> = reactive([])
-const searched_sum:Ref<string> = ref('')
-
-async function load_sums() {
-    var res = await fetch(`/api/mysums/${localStorage.token}/${searched_sum.value}`)
-    var result:arriving_sums[] = await res.json()
-    result.forEach(sum => {
-        var dt = new Date(sum.preProssessedDate)
-        sum.Date = {
-            date: dt.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit', year: 'numeric' }),
-            time: dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric' }),
-        }
-    })
-    my_summaries.splice(0, my_summaries.length, ...result)
-    console.log(my_summaries)
-
-}
-onMounted(load_sums)
-</script>
 
 <style scoped>
 .summaries{
@@ -172,54 +178,5 @@ onMounted(load_sums)
 .edit_symbol:hover> svg{
     fill: var(--anti_base);
     background-color: var(--base);
-}
-#search {
-    width: 100%;
-    height: var(--search_height);
-    padding: 0 15%;
-    position: absolute;
-    top: var(--nav_height);
-    background: var(--anti_base);
-    color: var(--base);
-}
-
-#search * {
-    font-size: 1.1rem;
-    font-weight: 600;
-    background: var(--anti_base);
-    color: var(--base);
-}
-#searchBar {
-    width: 100%;
-    height: 2.5rem;
-    position: relative;
-    margin-top: 1rem;
-    padding: 0 1rem;
-    outline: none;
-    border: none;
-    background: transparent;
-    border-bottom: 2px solid #aaa;
-    transition: border-color 0.2s;
-    z-index: 10;
-}
-#searchBar:focus,
-#searchBar:valid {
-    border-bottom-color: var(--base);
-}
-#searchBarLabel {
-    position: absolute;
-    background: transparent;
-    color: #888;
-    left: calc(15% + 1rem);
-    top: 1.5rem;
-    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity 0.2s;
-    z-index: 11;
-}
-#searchBar:focus ~ #searchBarLabel,
-#searchBar:valid ~ #searchBarLabel {
-    top: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--base);
-    opacity: 0.5;
 }
 </style>

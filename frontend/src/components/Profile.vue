@@ -16,7 +16,8 @@ export interface Properties {
 
 const showSelectedAccessUsersPanel: Ref<boolean> = ref(false)
 const restrict_access: Ref<boolean> = ref(false)
-const creator_id:Ref<number> = ref(0)
+const searched_sum:Ref<string> = ref('')
+
 
 const props = defineProps<Properties>();
 
@@ -45,12 +46,10 @@ async function transition_vars(new_pos: number) {
 
 
 watch(restrict_access, (n, o) => {
-    console.log(n)
     if (n) {
         showSelectedAccessUsersPanel.value = true
     }
 })
-
 </script>
 <template>
     <div class="user_info">
@@ -122,7 +121,12 @@ watch(restrict_access, (n, o) => {
                 :style="`--slide_direction:${middle_slide_direction}`"
             >
                 <h1 class="profile_part_headline">Meine Zusammenfassungen</h1>
-                <my-summaries :creator_id="creator_id"/>
+                <div id="search">
+                    <input id="searchBar" type="search" v-model="searched_sum" required />
+                    <label id="searchBarLabel" for="searchBar">Suche (Name, Fach oder Schule)...</label>
+                    <!-- <div>Du suchst nach {{ username }}</div> -->
+                </div>
+                <my-summaries v-model:searched_sum="searched_sum"/>
             </div>
             <div class="add_sum" v-else-if="show_profile_not_files == 2 && props.is_creator">
                 <h1 class="profile_part_headline">Zusammenfassungen hochladen</h1>
@@ -157,7 +161,7 @@ watch(restrict_access, (n, o) => {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    transition: all 1s, height 0.2s;
+    transition: all 1s, height 0.2s, width 0s;
 }
 .profile_component {
     margin-top: 1.5rem;
@@ -306,5 +310,53 @@ img.profile_image {
 .change_profile_content-leave-active,
 .change_profile_content-enter-active {
     transition: transform 0.4s, opacity 0.4s;
+}
+#search {
+    width: 100%;
+    height: var(--search_height);
+    padding: 0 15%;
+    position: relative;
+    background: var(--anti_base);
+    color: var(--base);
+}
+
+#search * {
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: var(--anti_base);
+    color: var(--base);
+}
+#searchBar {
+    width: 100%;
+    height: 2.5rem;
+    position: relative;
+    margin-top: 1rem;
+    padding: 0 1rem;
+    outline: none;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid #aaa;
+    transition: border-color 0.2s;
+    z-index: 10;
+}
+#searchBar:focus,
+#searchBar:valid {
+    border-bottom-color: var(--base);
+}
+#searchBarLabel {
+    position: absolute;
+    background: transparent;
+    color: #888;
+    left: calc(15% + 1rem);
+    top: 1.5rem;
+    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity 0.2s;
+    z-index: 11;
+}
+#searchBar:focus ~ #searchBarLabel,
+#searchBar:valid ~ #searchBarLabel {
+    top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--base);
+    opacity: 0.5;
 }
 </style>
