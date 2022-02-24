@@ -54,6 +54,16 @@ export function verify_access_token(token: string): Array<string | boolean | und
     }
 }
 
+export async function isCreator(sub: string): Promise<number> {
+    var res = await pool.query(`
+    select 
+    creator.id 
+    from users, creator
+    where users.id = creator.userid
+    and users.username = $1
+    `, [sub])
+    return res.rows.length
+}
 
 interface UserDetails {
     id: number,
@@ -67,7 +77,8 @@ interface UserDetails {
 }
 
 export async function userProfileInfo(sub: string | any): Promise<UserDetails[]> {
-    const res = await pool.query(`
+    var query_text = await isCreator(sub) ?
+        `
     select 
       users.id,
       username,
@@ -78,13 +89,22 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
       coalesce(count(summaries.id), 0) as "nSummaries"
     from 
       users
-      left join creator on (users.id = creator.userID)
-      left join summaries on (summaries.creator = users.id)
+      left join creator on (users.id = creator.userid)
+      left join summaries on (summaries.creator = creator.id)
       left join ratings on (ratings.ratedSummary = summaries.id)
       where users.username = $1
-      group by users.id
-    `, [sub])
+      and summaries.creator=creator.id and ratings.ratedSummary = summaries.id
+      group by users.id, creator.id
+    `:
+    `select 
+    users.id,username,firstname,lastname,avatar 
+    from users where users.username = $1 group by users.id`
+    const res = await pool.query(query_text, [sub])
     const result = res.rows
+    // console.log(sub, result,(await pool.query(`
+    // select username, count(summaries.id) as "nsums", avg(rating) as "avgrating" 
+    // from users, ratings, summaries, creator 
+    // where users.id=creator.userid and users.username = $1 and summaries.creator=creator.id and ratings.ratedSummary = summaries.id group by users.id`, [sub])).rows)
     return result
 }
 

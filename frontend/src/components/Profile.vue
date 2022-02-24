@@ -16,6 +16,7 @@ export interface Properties {
 
 const showSelectedAccessUsersPanel: Ref<boolean> = ref(false)
 const restrict_access: Ref<boolean> = ref(false)
+const creator_id:Ref<number> = ref(0)
 
 const props = defineProps<Properties>();
 
@@ -72,6 +73,7 @@ watch(restrict_access, (n, o) => {
                 @mouseenter="transition_vars(1)"
                 @click="show_profile_not_files = 1"
                 :class="show_profile_not_files == 1 ? 'active' : ''"
+                v-if="props.is_creator"
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -94,13 +96,16 @@ watch(restrict_access, (n, o) => {
                 title="Zusammenfassungen hochladen"
                 :class="show_profile_not_files == 2 ? 'active' : ''"
                 id="addsum_interface_button"
+                v-if="props.is_creator"
             >
                 <span class="profile_image">+</span>
             </button>
         </div>
         <transition name="change_profile_content" mode="out-in">
             <div class="user_data" v-if="show_profile_not_files == 0">
-                <h1 class="profile_headline profile_part_headline">{{ props.firstname }} {{ props.lastname }}</h1>
+                <h1
+                    class="profile_headline profile_part_headline"
+                >{{ props.firstname }} {{ props.lastname }}</h1>
                 <p class="profile_component">Benutzername: {{ props.username }}</p>
                 <p
                     v-if="props.is_creator"
@@ -113,13 +118,13 @@ watch(restrict_access, (n, o) => {
             </div>
             <div
                 class="user_sums"
-                v-else-if="show_profile_not_files == 1"
+                v-else-if="show_profile_not_files == 1 && props.is_creator"
                 :style="`--slide_direction:${middle_slide_direction}`"
             >
                 <h1 class="profile_part_headline">Meine Zusammenfassungen</h1>
-                <my-summaries />
+                <my-summaries :creator_id="creator_id"/>
             </div>
-            <div class="add_sum" v-else-if="show_profile_not_files == 2">
+            <div class="add_sum" v-else-if="show_profile_not_files == 2 && props.is_creator">
                 <h1 class="profile_part_headline">Zusammenfassungen hochladen</h1>
                 <add-sum
                     class="profile_component"
@@ -161,7 +166,7 @@ watch(restrict_access, (n, o) => {
 .profile_headline {
     margin-top: 10px;
 }
-.profile_part_headline{
+.profile_part_headline {
     position: sticky;
     top: 0;
 }
@@ -228,9 +233,9 @@ watch(restrict_access, (n, o) => {
     transition: all 1s, transform 0.2s;
 }
 
-img.profile_image{
+img.profile_image {
     filter: grayscale(1);
-    transition: all 1s, transform 0.2s, grayscale .75s;
+    transition: all 1s, transform 0.2s, grayscale 0.75s;
 }
 
 .user_data,
@@ -251,11 +256,11 @@ img.profile_image{
     --slide_direction: 1;
 }
 
-#edit_sums_svg{
-    padding: .1rem;
+#edit_sums_svg {
+    padding: 0.2rem;
 }
 
-#addsum_interface_button span{
+#addsum_interface_button span {
     font-size: 3rem;
     display: flex;
     justify-content: center;
@@ -264,28 +269,26 @@ img.profile_image{
     height: 100%;
 }
 
-.profile_top_button.active > img{
+.profile_top_button.active > img {
     filter: grayscale(0);
 }
-.profile_top_button > svg{
+.profile_top_button > svg {
     background: var(--anti_base);
     fill: var(--base);
 }
 
-.profile_top_button > span{
+.profile_top_button > span {
     color: var(--base);
     background: var(--anti_base);
-
 }
-.profile_top_button.active > svg{
+.profile_top_button.active > svg {
     background: var(--base);
     fill: var(--anti_base);
 }
 
-.profile_top_button.active > span{
+.profile_top_button.active > span {
     background: var(--base);
     color: var(--anti_base);
-
 }
 
 .profile_top_button:hover > .profile_image {

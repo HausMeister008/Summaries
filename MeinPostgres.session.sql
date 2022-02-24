@@ -76,7 +76,7 @@ create table "summaries"(
 
 insert into users (firstname, lastname,username, pwd) values ('Leon', 'Grass', 'LeonG','');
 insert into users (firstname, lastname,username, pwd) values ('Pirmin', 'Bothur', 'PirminB','');
-insert into creator (userID, SAmount) values (1,0);
+insert into creator (userID) values (1);
 insert into locations (plz, location_name) values('79576', 'Weil am Rhein');
 insert into schools (school_name, school_plz) values ('Kant-Gymnasium', '79576');
 insert into subjects (subject_name, subject_school, subject_year) values ('Informatik', 1, 11);

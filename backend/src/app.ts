@@ -70,6 +70,64 @@ app.get("/api/users", async (req, res) => {
     .json(res_json);
 });
 
+app.get('/api/mysums', async (req, res) => {
+  console.log('loading users sums')
+  const token: string = (typeof (req.query.token) == 'string') ? req.query.token : ''
+  var {sum} = req.query
+  sum = sum ?? ''
+  const verified_token = functions.verify_access_token(token)
+  const sub = verified_token[0]
+  if (!sub || sub == '') {
+    res.send({ success: false })
+    return
+  }
+  const user_id = await functions.getUserID(sub.toString())
+  if (await functions.isCreator(sub.toString())) {
+    const sums = await pool.query(`
+    select
+      summaries.id,
+      summaries.sumname,
+      coalesce(avg(rating), 0) as "rating",
+      coalesce(count(rating), 0) as "ratingamount",
+      "Date" as "preProssessedDate",
+      subjects.subject_name,
+      subjects.subject_year,
+      schools.school_name,
+      locations.location_name
+    from 
+      users, 
+      creator,
+      summaries, 
+      ratings,
+      subjects, 
+      schools, 
+      locations
+    where
+      users.id = $1
+      and creator.userid = users.id
+      and summaries.creator = creator.id
+      and summaries.subject_id = subjects.id
+      and subjects.subject_school = schools.id
+      and schools.school_plz = locations.plz
+      and ratings.ratedSummary = summaries.id
+    group by
+      summaries.id, 
+      subjects.subject_name, 
+      subjects.subject_year, 
+      schools.school_name,
+      locations.location_name
+    `, [user_id])
+    console.log(sums.rows)
+    sums.rows.forEach(row => {
+      row.ratingamount = parseInt(row.ratingamount)
+    })
+    res.json(sums.rows)
+  }
+  else{
+    res.json({success:false})
+  }
+})
+
 app.get('/api/userdetails/:id/:token', async (req, res) => {
   const creator_id = req.params.id
   const token: string = req.params.token
@@ -296,9 +354,9 @@ app.post('/api/upload_sum', (req, res) => {
       } else if ('usertoken' == name) {
         add_data.token = value
       } else if ('restrict' == name) {
-        var val:boolean = value=='true'?true: false
+        var val: boolean = value == 'true' ? true : false
         console.log('access', (val ? 'restricted:' : 'granted'))
-        add_data.grant_access = typeof(val)=='boolean' ? val : true
+        add_data.grant_access = typeof (val) == 'boolean' ? val : true
       } else if ('addusers' == name) {
         var adduser_array: number[] = (value.replaceAll('[', '').replaceAll(']', '').replaceAll(',', ' ').split(' ')).map((v: string) => { return parseInt(v) })
         console.log('users:', ...adduser_array)
@@ -370,7 +428,7 @@ app.post('/api/ratesum', async (req, res) => {
     } else {
       res.json({ success: false })
     }
-  }else{
+  } else {
     res.json({ success: false })
   }
 })
