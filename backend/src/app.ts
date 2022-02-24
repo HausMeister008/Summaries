@@ -107,6 +107,7 @@ app.get('/api/mysums', async (req, res) => {
         lower(sumname) like lower($2||'%')
         or lower(subject_name) like lower($2||'%')
         or lower(school_name) like lower($2||'%')
+        or summaries.id::TEXT = $2
         )
     group by
       summaries.id, 
@@ -117,11 +118,12 @@ app.get('/api/mysums', async (req, res) => {
     `, [user_id, searched_sum])
     sums.rows.forEach(row => {
       row.ratingamount = parseInt(row.ratingamount)
+      row.rating = parseFloat(row.rating).toFixed(2)
     })
     res.json(sums.rows)
   }
-  else{
-    res.json({success:false})
+  else {
+    res.json({ success: false })
   }
 })
 
@@ -430,7 +432,16 @@ app.post('/api/ratesum', async (req, res) => {
   }
 })
 
+
+app.post('/api/update_sum', async (req, res) => {
+  const { update_values, token } = req.body
+  console.log('updating:',update_values, token)
+  res.json({ success: true })
+})
+
 const port = 8080
 const server = app.listen(port, () => {
   console.log('opened server on port', port);
 })
+
+

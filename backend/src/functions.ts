@@ -102,6 +102,10 @@ export async function userProfileInfo(sub: string | any): Promise<UserDetails[]>
     const res = await pool.query(query_text, [sub])
     const result = res.rows
     console.log(is_creator, sub, result)
+    result.forEach(row=>{
+        row.avg_rating = parseFloat(row.avg_rating).toFixed(2)
+        
+    })
     // console.log(sub, result,(await pool.query(`
     // select username, count(summaries.id) as "nsums", avg(rating) as "avgrating" 
     // from users, ratings, summaries, creator 

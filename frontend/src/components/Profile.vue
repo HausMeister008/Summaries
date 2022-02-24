@@ -40,7 +40,6 @@ async function transition_vars(new_pos: number) {
     } else if (old_pos != 1 && new_pos < old_pos) {
         middle_slide_direction.value = -1
     }
-    console.log(middle_slide_direction.value, `(${old_pos}->${new_pos})`)
 
 }
 
@@ -337,7 +336,6 @@ img.profile_image {
     background: transparent;
     border-bottom: 2px solid #aaa;
     transition: border-color 0.2s;
-    z-index: 10;
 }
 #searchBar:focus,
 #searchBar:valid {
@@ -350,7 +348,6 @@ img.profile_image {
     left: calc(15% + 1rem);
     top: 1.5rem;
     transition: top 0.2s, font-size 0.2s, color 0.2s, opacity 0.2s;
-    z-index: 11;
 }
 #searchBar:focus ~ #searchBarLabel,
 #searchBar:valid ~ #searchBarLabel {

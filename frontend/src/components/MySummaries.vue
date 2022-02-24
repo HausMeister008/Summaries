@@ -1,5 +1,6 @@
 
 <script lang="ts" setup>
+import EditSummary from './EditSummary.vue';
 
 import { ref, reactive, watch, onMounted, Ref, toRefs} from 'vue'
 
@@ -28,6 +29,8 @@ interface arriving_sums extends summary{
 }
 
 const my_summaries: Array<summary> = reactive([])
+const editing_sum: Ref<boolean> = ref(false)
+const editing_sum_id: Ref<number> = ref(0)
 
 async function load_sums() {
     var res = await fetch(`/api/mysums?token=${localStorage.token}&searched_sum=${encodeURIComponent(searched_sum.value)}`)
@@ -43,6 +46,12 @@ async function load_sums() {
     console.log(my_summaries)
 
 }
+
+async function edit_sum(id:number){
+    editing_sum_id.value = id
+    editing_sum.value = true
+}
+
 onMounted(load_sums)
 watch(searched_sum, (n,o)=>{
     load_sums()
@@ -52,7 +61,7 @@ watch(searched_sum, (n,o)=>{
 <template>
     <div class="summaries">
         <div class="summary" v-for="sum in my_summaries">
-            <div class="edit_symbol">
+            <div class="edit_symbol" @click="edit_sum(sum.id)">
                 <svg
                     version="1.1"
                     xmlns="http://www.w3.org/2000/svg"
@@ -81,7 +90,9 @@ watch(searched_sum, (n,o)=>{
                 </svg>
             </div>
         </div>
+        
     </div>
+    <edit-summary v-if="editing_sum" v-model:show="editing_sum" v-model:sum_id="editing_sum_id"/>
 </template>
 
 <style scoped>
