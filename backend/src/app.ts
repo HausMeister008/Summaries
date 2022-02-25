@@ -11,11 +11,9 @@ const REFRESH_TOKEN_SECRET: string | undefined = parsed ? parsed.REFRESH_TOKEN_S
 import * as functions from "./functions";
 import multyparty from 'multiparty'
 import { nanoid } from 'nanoid'
-import sharp from 'sharp'
 import fs from 'fs'
 import { addData } from "./functions";
 import path from "path";
-import mime from "mime"
 
 
 const pool = new Pool({

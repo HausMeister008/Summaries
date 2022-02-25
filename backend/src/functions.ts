@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import dotenv, { DotenvConfigOutput } from 'dotenv'
 const dotenv_vars = dotenv.config()
