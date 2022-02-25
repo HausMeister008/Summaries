@@ -343,9 +343,9 @@ app.post('/api/upload_sum', (req, res) => {
         })
       )
     })
-    form.on('field', async (name, value) => {
-      if (["subject", "school"].includes(name)) {
-        add_data[name] = value as "subject" | "school"
+    form.on('field', async (name: keyof addData | 'sum_name_inpt' | 'usertoken' | 'restrict', value) => {
+      if ((["subject", "school"]).includes(name)) {
+        add_data[name as "subject" | "school"] = value 
       } else if ("sum_name_inpt" == name) {
         add_data.sum_name = value
       } else if ('usertoken' == name) {
