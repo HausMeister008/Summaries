@@ -2,7 +2,6 @@ import express, { application, query } from "express";
 import { Pool } from "pg";
 // https://node-postgres.com/
 const app = express();
-import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import dotenv, { DotenvConfigOutput } from 'dotenv'
 const dotenv_vars = dotenv.config()
 const parsed = dotenv_vars.parsed
@@ -11,11 +10,9 @@ const REFRESH_TOKEN_SECRET: string | undefined = parsed ? parsed.REFRESH_TOKEN_S
 import * as functions from "./functions";
 import multyparty from 'multiparty'
 import { nanoid } from 'nanoid'
-import sharp from 'sharp'
 import fs from 'fs'
 import { addData } from "./functions";
 import path from "path";
-import mime from "mime"
 
 
 const pool = new Pool({
@@ -345,9 +342,11 @@ app.post('/api/upload_sum', (req, res) => {
         })
       )
     })
-    form.on('field', async (name, value) => {
-      if (["subject", "school"].includes(name)) {
-        add_data[name] = value as "subject" | "school"
+    form.on('field', async (name: keyof addData | 'sum_name_inpt' | 'usertoken' | 'restrict', value) => {
+      if ("subject" == name) {
+        add_data.subject= value
+      }else if("school" == name){
+        add_data.school= value
       } else if ("sum_name_inpt" == name) {
         add_data.sum_name = value
       } else if ('usertoken' == name) {

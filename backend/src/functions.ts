@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
 import dotenv, { DotenvConfigOutput } from 'dotenv'
 const dotenv_vars = dotenv.config()
@@ -132,12 +132,14 @@ export interface addData {
     filename: string | undefined,
     sum_name: string | undefined,
     subject: string | undefined,
-    [school: string]: string | undefined,
+    school?: string
+    //[school: string]: string | undefined,
     token: string,
     grant_access: boolean | undefined,
     addusers: number[] | undefined,
 }
 export async function addNewSum(add_data: addData) {
+    console.log(add_data)
     var sub: string | undefined | JwtPayload | boolean | number = verify_access_token(add_data.token)
     var creator = await getCreatorID(sub[0])
     console.log('restrict access:', add_data.grant_access)

@@ -103,7 +103,6 @@ onMounted(load_sum)
                 </div>
                 <button type="submit">Änderungen übernehmen</button>
             </form>
-            <p>{{ to_update }}</p>
         </div>
     </div>
 </template>
@@ -147,5 +146,19 @@ onMounted(load_sum)
     transform: scale(1.1);
     background: rgba(255, 0, 0, 0.5);
     color: var(--anti_base);
+}
+.edit_container{
+    padding: 1rem 2rem;
+    width: 100%;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+.edit_container > *{
+    margin-inline: 1rem;
+    font-size: 1.1rem;
+}
+.edit_container > input{
+
 }
 </style>
