@@ -6,7 +6,7 @@ import json from '@rollup/plugin-json';
 
 export default {
   input: 'src/app.ts',
-  external: ['pg-native'],
+  external: ['pg-native', 'readable-stream'],
   output: {
     sourcemap: true,
     manualChunks: {
