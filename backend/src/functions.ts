@@ -129,11 +129,10 @@ export async function getCreatorID(creator: string): Promise<number | undefined>
 }
 
 export interface addData {
-    filename: string | undefined,
-    sum_name: string | undefined,
-    subject: string | undefined,
+    filename?: string,
+    sum_name?: string,
+    subject?: string,
     school?: string
-    //[school: string]: string | undefined,
     token: string,
     grant_access: boolean | undefined,
     addusers: number[] | undefined,

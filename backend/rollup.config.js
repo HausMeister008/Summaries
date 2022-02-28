@@ -1,12 +1,12 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { dependencies } from './package.json';
 import typescript from '@rollup/plugin-typescript';
-import json from '@rollup/plugin-json';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 
 export default {
   input: 'src/app.ts',
-  external: ['pg-native'],
+  external: ['pg-native', 'readable-stream'],
   output: {
     sourcemap: true,
     manualChunks: {
@@ -21,12 +21,12 @@ export default {
     typescript({
       tsconfig: './tsconfig.json',
     }),
+    json(),
     nodeResolve({
       preferBuiltins: true
     }),
-    json(),
     commonjs({
-      ignore: ['pg-native', './native']
+      ignore: ['pg-native' , './native']
     })
   ]
 };
