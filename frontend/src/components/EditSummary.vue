@@ -143,7 +143,7 @@ onMounted(() => {
                     />
                     <label id="name_edit" class="edit_inpt_label">Name: {{ sum[0].sumname }}</label>
                 </div>
-                <div class="dropdown_menu">
+                <div class="dropdown_menu edit_container">
                     <select
                         name="subject"
                         id="select_subject_dropdown"
@@ -158,7 +158,7 @@ onMounted(() => {
                         >{{ subject.name }} (Klasse {{ subject.year }})</option>
                     </select>
                 </div>
-                <div class="dropdown_menu">
+                <div class="dropdown_menu edit_container">
                     <select
                         name="school"
                         id="select_school_dropdown"
@@ -173,7 +173,7 @@ onMounted(() => {
                         >{{ school.name }} ({{ school.location }})</option>
                     </select>
                 </div>
-                <button type="submit">Änderungen übernehmen</button>
+                <button type="submit" id="submitChanges">Änderungen übernehmen</button>
             </form>
         </div>
     </div>
@@ -189,7 +189,7 @@ onMounted(() => {
     border-radius: 5px;
     color: var(--base);
     padding: 2rem 0;
-    top: 5%;
+    top:15px; /*enough space for box shadow*/
     left: 10%;
     /* display: grid; */
     /* grid-template-rows: 2.5rem var(--search_height) auto; */
@@ -236,7 +236,7 @@ onMounted(() => {
     position: relative;
 }
 .edit_container * {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 600;
     background: transparent;
 }
@@ -271,5 +271,44 @@ onMounted(() => {
     font-size: 0.75em;
     color: var(--base);
     opacity: 0.5;
+}
+.dropdown_menu {
+    margin-top: 1.2rem;
+}
+.dropdown_menu select {
+    font-size: 1rem;
+    height: 2em;
+    text-align: center;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 0 5px var(--box_shadows);
+    background-color: var(--anti_base);
+    color: var(--base);
+}
+.dropdown_menu option {
+    font-size: .9rem;
+    text-align: center;
+    background: var(--anti_base);
+    color: var(--base);
+}
+.dropdown_menu option[selected] {
+    background: var(--base);
+    color: var(--anit_base);
+}
+#submitChanges{
+    margin-top: 2rem;
+    font-size: 1.2rem;
+    border: none;
+    padding: .5rem;
+    background: var(--anti_base);
+    color: var(--base);
+    box-shadow: 0 0 15px var(--box_shadows);
+    border-radius: 5px;
+    transition: all 1s, transform .2s;
+}
+#submitChanges:hover{
+    cursor: pointer;
+    transform: scale(1.05);
 }
 </style>
