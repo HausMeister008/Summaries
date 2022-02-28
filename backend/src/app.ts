@@ -278,18 +278,19 @@ app.post('/api/SumValues/', async (req, res) => {
   const current_school = req.body.school
 
   var subjects: Array<Object> = (await pool.query(`
-  select subject_name, subjects.id
+  select subject_name, subjects.id, subject_year
   from subjects, schools
   where lower(schools.school_name) like lower($1||'%')
   and schools.id = subjects.subject_school
-  `, [current_school])).rows.map((row) => { return { name: row.subject_name, id: row.id } }).sort()
+  `, [current_school])).rows.map((row) => { return { name: row.subject_name, id: row.id, year: row.subject_year } }).sort()
 
-  var schools: Array<string> = (await pool.query(`
-  select distinct(school_name) 
-  from subjects, schools
+  var schools: Array<Object> = (await pool.query(`
+  select distinct(school_name), location_name
+  from subjects, schools, locations
   where (subjects.id = $1 or 0=$1)
   and schools.id = subjects.subject_school
-  `, [current_subject])).rows.map((row) => { return row.school_name }).sort()
+  and locations.plz = schools.school_plz
+  `, [current_subject])).rows.map((row) => { return {name: row.school_name, location: row.location_name} }).sort()
 
   res.send({
     subjects,
@@ -433,8 +434,19 @@ app.post('/api/ratesum', async (req, res) => {
 
 
 app.post('/api/update_sum', async (req, res) => {
-  const { update_values, token } = req.body
-  console.log('updating:',update_values, token)
+  const {subject, sumname} = req.body
+  const sum_id = req.body.sum_id
+  const token = req.body.token
+  console.log('updating:',subject, sumname, token)
+  var query:string
+  if(sumname){
+    await pool.query("update summaries set sumname = $1 where id=$2", [sumname, sum_id])
+  }
+  if(subject){
+    await pool.query("update summaries set subject_id = $1 where id=$2", [subject, sum_id])      
+  }
+
+
   res.json({ success: true })
 })
 

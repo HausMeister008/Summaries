@@ -18,12 +18,18 @@ const form: Ref<HTMLFormElement | undefined> = ref()
 
 interface subject {
     name: string,
-    id: number
+    id: number,
+    year: number
+}
+
+interface school{
+    name: string,
+    location: string
 }
 
 interface options {
     subjects: subject[],
-    schools: string[]
+    schools: school[]
 }
 
 const options: options = reactive({
@@ -171,7 +177,7 @@ watch(school_inpt, (old_school, new_school) => {
                         <option
                             v-for="subject in options.subjects"
                             :value="subject.id"
-                        >{{ subject.name }}</option>
+                        >{{ subject.name }} (Klasse {{subject.year}})</option>
                     </select>
                 </div>
                 <div class="dropdown_menu">
@@ -183,7 +189,7 @@ watch(school_inpt, (old_school, new_school) => {
                         v-model="school_inpt"
                     >
                         <option value selected>Schule (keine Schule ausgewählt)</option>
-                        <option v-for="school in options.schools" :value="school">{{ school }}</option>
+                        <option v-for="school in options.schools" :value="school.name">{{ school.name }} ({{school.location}})</option>
                     </select>
                 </div>
                 <div class="sum_inpt_group">

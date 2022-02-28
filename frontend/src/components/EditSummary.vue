@@ -1,14 +1,16 @@
 <script setup lang="ts">
 
-import { onMounted, ref, reactive, Ref } from 'vue'
+import { onMounted, ref, reactive, Ref, watch } from 'vue'
 
 interface editSumProperties {
     sum_id: number,
-    show: boolean
+    show: boolean,
+    changed: number
 }
 
 const emit = defineEmits<{
     (e: 'update:show', value: boolean): void;
+    (e: 'update:changed', value: number): void;
 }>();
 
 const close = () => {
@@ -17,19 +19,10 @@ const close = () => {
 
 interface categories {
     sumname: string,
-    location_name: string,
     school_name: string,
-    subject_name: string,
-    subject_year: number | string
+    subject?: number | string // subject id
 }
 
-const categories: categories = {
-    sumname: 'Name',
-    subject_name: 'Fach',
-    school_name: 'Schule',
-    location_name: 'Ort',
-    subject_year: 'Klasse',
-}
 
 interface summary extends categories {
     id: number,
@@ -43,7 +36,7 @@ interface arriving_sums extends summary {
 }
 const sum: Array<summary> = reactive([])
 
-const delete_from_sum = ['id', 'rating', 'preProssessedDate', 'ratingamount']
+const update_inpt_form = ref()
 
 async function load_sum() {
     const res = await fetch(`/api/mysums?token=${localStorage.token}&searched_sum=${props.sum_id}`)
@@ -51,14 +44,13 @@ async function load_sum() {
     sum.splice(0, sum.length, result[0])
 }
 
-const to_update: categories = reactive({
+const initial_state: categories = {
     sumname: '',
-    subject_name: '',
     school_name: '',
-    location_name: '',
-    subject_year: '',
+    subject: ''
+}
 
-})
+const to_update: categories = reactive({ ...initial_state })
 
 async function update() {
     var update_values: any = {}
@@ -67,7 +59,7 @@ async function update() {
             update_values[key] = value
         }
     })
-    console.log(update_values)
+    to_update.sumname = ''
     const res = await fetch(`/api/update_sum`, {
         method: 'POST',
         headers: {
@@ -75,16 +67,58 @@ async function update() {
         },
         body: JSON.stringify(
             {
-                update_values: update_values,
-                token: localStorage.token
+                subject: update_values.subject,
+                sumname: update_values.sumname,
+                token: localStorage.token,
+                sum_id: props.sum_id
             }
         )
     })
+    emit('update:changed', props.changed + 1);
+    load_sum()
+}
+interface subject {
+    name: string,
+    id: number,
+    year: number
+}
+
+interface school {
+    name: string,
+    location: string
+}
+
+interface options {
+    subjects: subject[],
+    schools: school[]
+}
+
+const options: options = reactive({
+    subjects: [],
+    schools: [],
+})
+
+async function get_dropdown_options() {
+    const res = await fetch(`/api/SumValues/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            subject: to_update.subject,
+            school: to_update.school_name
+        })
+    })
+    const result: options = await res.json()
+    Object.assign(options, result)
+
 }
 
 const props = defineProps<editSumProperties>()
 
-onMounted(load_sum)
+onMounted(() => {
+    load_sum()
+    get_dropdown_options()
+})
+
 </script>
 
 <template>
@@ -92,14 +126,52 @@ onMounted(load_sum)
         <button id="close_edit" @click="close()">🗙</button>
         <div class="sum_edit" v-if="sum[0]">
             <h1>Du bearbeitest: "{{ sum[0].sumname }}"</h1>
-            <form @submit.prevent="update()" action="/api/update_sum" method="post">
-                <div
-                    class="edit_container"
-                    v-for="(category, name, index) in categories"
-                    :key="name"
-                >
-                    <label :id="name.toString()">{{ category }}: {{ sum[0][name] }}</label>
-                    <input :for="name.toString()" type="text" v-model="to_update[name]" />
+            <form
+                @submit.prevent="update()"
+                action="/api/update_sum"
+                method="post"
+                ref="update_inpt_form"
+                id="edit_sum_form"
+            >
+                <div class="edit_container">
+                    <input
+                        :data_value="to_update.sumname"
+                        for="name_edit"
+                        type="text"
+                        v-model="to_update.sumname"
+                        class="edit_inpt"
+                    />
+                    <label id="name_edit" class="edit_inpt_label">Name: {{ sum[0].sumname }}</label>
+                </div>
+                <div class="dropdown_menu">
+                    <select
+                        name="subject"
+                        id="select_subject_dropdown"
+                        class="dropdown_input"
+                        v-model="to_update.subject"
+                        @change="get_dropdown_options"
+                    >
+                        <option value selected>Fachauswahl (kein Fach ausgewählt)</option>
+                        <option
+                            v-for="subject in options.subjects"
+                            :value="subject.id"
+                        >{{ subject.name }} (Klasse {{ subject.year }})</option>
+                    </select>
+                </div>
+                <div class="dropdown_menu">
+                    <select
+                        name="school"
+                        id="select_school_dropdown"
+                        class="dropdown_input"
+                        @change="get_dropdown_options"
+                        v-model="to_update.school_name"
+                    >
+                        <option value selected>Schule (keine Schule ausgewählt)</option>
+                        <option
+                            v-for="school in options.schools"
+                            :value="school.name"
+                        >{{ school.name }} ({{ school.location }})</option>
+                    </select>
                 </div>
                 <button type="submit">Änderungen übernehmen</button>
             </form>
@@ -147,18 +219,57 @@ onMounted(load_sum)
     background: rgba(255, 0, 0, 0.5);
     color: var(--anti_base);
 }
-.edit_container{
-    padding: 1rem 2rem;
-    width: 100%;
-    display: flex;
-    align-content: center;
+#edit_sum_form {
+    display: grid;
     justify-content: center;
+    align-content: center;
+    flex-direction: column;
 }
-.edit_container > *{
-    margin-inline: 1rem;
+.edit_container {
+    width: 50%;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid transparent;
+    border-radius: 5px;
+    position: relative;
+}
+.edit_container * {
     font-size: 1.1rem;
+    font-weight: 600;
+    background: transparent;
 }
-.edit_container > input{
-
+.edit_container {
+    margin-top: 1.2rem;
+}
+.edit_inpt {
+    width: 100%;
+    border: none;
+    outline: none;
+    border-bottom: #aaa 2px solid;
+    padding: 0 0.5rem;
+    transition: border-bottom-color 0.2s;
+    color: var(--base);
+}
+.edit_inpt:focus,
+.edit_inpt[data_value]:not([data_value=""]) {
+    border-bottom-color: var(--base);
+}
+.edit_inpt ~ .edit_inpt_label {
+    position: absolute;
+    color: #777;
+    left: 0.5rem;
+    top: 0;
+    pointer-events: none;
+    transition: top 0.2s ease-in-out, font-size 0.2s ease-in-out, color 0.2s,
+        opacity 0.2s;
+}
+.edit_inpt:focus ~ .edit_inpt_label,
+.edit_inpt[data_value]:not([data_value=""]) ~ .edit_inpt_label {
+    top: -1.1em;
+    font-size: 0.75em;
+    color: var(--base);
+    opacity: 0.5;
 }
 </style>

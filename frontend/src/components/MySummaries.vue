@@ -11,6 +11,8 @@ export interface Properties{
 const props = defineProps<Properties>();
 
 const {searched_sum} = toRefs(props)
+const sum_vals_changed = ref(0)
+
 
 interface summary {
     id: number,
@@ -56,6 +58,9 @@ onMounted(load_sums)
 watch(searched_sum, (n,o)=>{
     load_sums()
 })
+watch(sum_vals_changed, (n,o)=>{
+    load_sums()
+})
 </script>
 
 <template>
@@ -92,7 +97,7 @@ watch(searched_sum, (n,o)=>{
         </div>
         
     </div>
-    <edit-summary v-if="editing_sum" v-model:show="editing_sum" v-model:sum_id="editing_sum_id"/>
+    <edit-summary v-if="editing_sum" v-model:show="editing_sum" v-model:sum_id="editing_sum_id" v-model:changed="sum_vals_changed" />
 </template>
 
 <style scoped>
