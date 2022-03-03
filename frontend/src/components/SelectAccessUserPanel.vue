@@ -10,24 +10,27 @@ import {
 import CustomCheckbox from '../components/CustomCheckbox.vue'
 
 
-const username = ref('')
-const users: UserProperties[] = reactive([])
-const addusers: Ref<number[]> = ref([])
-
 const props = defineProps<{
     show: boolean,
-    adduser_array:Array<number>
+    adduser_array: Array<number>
 }>();
+
+const username = ref('')
+const users: UserProperties[] = reactive([])
+const addusers: Ref<number[]> = ref([...props.adduser_array])
 
 const emit = defineEmits<{
     (e: 'update:show', value: boolean): void;
     (e: 'update:adduser_array', value: number[]): void;
 }>();
 
-const onClick = () => {
-    emit('update:show', !props.show);
-    console.log(addusers.value)
+const update = () => {
     emit('update:adduser_array', addusers.value);
+}
+
+const onClick = () => {
+    update()
+    emit('update:show', !props.show);
 }
 watch(username, async (newUsername, oldUsername) => {
     /*
@@ -40,25 +43,17 @@ watch(username, async (newUsername, oldUsername) => {
     await users.splice(0, users.length, ...result)
 
 })
-watch(addusers, (n, o) => {
-    // console.log(...n.filter(x=>!o.includes(x)))
-})
-
-// function adduser(id:number, checked:boolean){
-//     if(checked){
-//         addusers.value.push(id)
-//     }else{
-//         var ind:number = addusers.value.indexOf(id)
-//         if(ind > -1)  addusers.value.splice(ind, 1) 
-//         else return 
-//     }
-// }
 
 const load = () => fetch(`/api/users?token=${localStorage.token}&onlycreators=false`)
     .then((response) => response.json())
     .then((result) => users.splice(0, users.length, ...result));
 
-onMounted(load)
+onMounted(async () => {
+    load()
+})
+watch(addusers, (n, o) => {
+    update()
+})
 //const checkedNames: string[] = reactive([])
 </script>
 
@@ -67,17 +62,6 @@ onMounted(load)
         <div class="access_user_form" v-if="show">
             <button id="close_access_user_form" @click="onClick">🗙</button>
             <h1 id="access_headline">Grant Access</h1>
-            <!-- {{ addusers }}
-        <div id="v-model-multiple-checkboxes">
-        <input type="checkbox" id="jack" value="Jack" v-model="checkedNames" />
-        <label for="jack">Jack</label>
-        <input type="checkbox" id="john" value="John" v-model="checkedNames" />
-        <label for="john">John</label>
-        <input type="checkbox" id="mike" value="Mike" v-model="checkedNames" />
-        <label for="mike">Mike</label>
-        <br />
-        <span>Checked names: {{ checkedNames }}</span>
-            </div>-->
 
             <div id="search">
                 <input id="searchBar" type="search" v-model="username" required />
@@ -102,6 +86,7 @@ onMounted(load)
                         v-model:array="addusers"
                         :array-element="user.ID"
                         label="Hinzufügen"
+                        @change="update"
                     ></custom-checkbox>
                 </div>
             </div>
@@ -226,13 +211,13 @@ onMounted(load)
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
     overflow: hidden;
-    transition: all 1s, transform 0.2s, margin-top .5s;
+    transition: all 1s, transform 0.2s, margin-top 0.5s;
 }
-.to_select_user *{
+.to_select_user * {
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content:center;
+    justify-content: center;
 }
 .to_select_user:hover {
     transform: scale(1.02);
@@ -245,7 +230,7 @@ onMounted(load)
     height: 100%;
     max-width: 150px;
 }
-.checkbox_input_group{
+.checkbox_input_group {
     padding: 0 2rem 0 0;
 }
 .fade_in_selection_panel-enter-from {

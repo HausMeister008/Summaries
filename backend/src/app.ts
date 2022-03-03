@@ -89,7 +89,9 @@ app.get('/api/mysums', async (req, res) => {
       subjects.subject_name,
       subjects.subject_year,
       schools.school_name,
-      locations.location_name
+      locations.location_name,
+      count(distinct(saccess.id)) as "saccess_amount",
+      summaries.restricted as "restricted"
     from 
       users
       join creator on (creator.userid = users.id)
@@ -98,6 +100,7 @@ app.get('/api/mysums', async (req, res) => {
       left join ratings on(ratings.ratedSummary = summaries.id)
       left join schools on(subjects.subject_school = schools.id)
       left join locations on(schools.school_plz = locations.plz)
+      left join saccess on (summaries.id = saccess.summary)
     where
       users.id = $1
       and (
@@ -113,10 +116,23 @@ app.get('/api/mysums', async (req, res) => {
       schools.school_name,
       locations.location_name
     `, [user_id, searched_sum])
-    sums.rows.forEach(row => {
+    for (const row of sums.rows) {
       row.ratingamount = parseInt(row.ratingamount)
       row.rating = parseFloat(row.rating).toFixed(2)
-    })
+
+      var access_res = await pool.query(`
+      select userid 
+      from saccess, summaries, users
+      where 
+      users.id = $1
+      and summaries.id = $2
+      and saccess.summary = summaries.id
+      `, [user_id, row.id])
+      var access: Array<number> = access_res.rows.map(row => {
+        return row.userid
+      })
+      row.access = access
+    }
     res.json(sums.rows)
   }
   else {
@@ -290,7 +306,7 @@ app.post('/api/SumValues/', async (req, res) => {
   where (subjects.id = $1 or 0=$1)
   and schools.id = subjects.subject_school
   and locations.plz = schools.school_plz
-  `, [current_subject])).rows.map((row) => { return {name: row.school_name, location: row.location_name} }).sort()
+  `, [current_subject])).rows.map((row) => { return { name: row.school_name, location: row.location_name } }).sort()
 
   res.send({
     subjects,
@@ -345,9 +361,9 @@ app.post('/api/upload_sum', (req, res) => {
     })
     form.on('field', async (name: keyof addData | 'sum_name_inpt' | 'usertoken' | 'restrict', value) => {
       if ("subject" == name) {
-        add_data.subject= value
-      }else if("school" == name){
-        add_data.school= value
+        add_data.subject = value
+      } else if ("school" == name) {
+        add_data.school = value
       } else if ("sum_name_inpt" == name) {
         add_data.sum_name = value
       } else if ('usertoken' == name) {
@@ -434,16 +450,55 @@ app.post('/api/ratesum', async (req, res) => {
 
 
 app.post('/api/update_sum', async (req, res) => {
-  const {subject, sumname} = req.body
+  const { subject, sumname } = req.body
+  const access: Array<number> = req.body.access
   const sum_id = req.body.sum_id
   const token = req.body.token
-  console.log('updating:',subject, sumname, token)
-  var query:string
-  if(sumname){
-    await pool.query("update summaries set sumname = $1 where id=$2", [sumname, sum_id])
-  }
-  if(subject){
-    await pool.query("update summaries set subject_id = $1 where id=$2", [subject, sum_id])      
+  const verified_token = functions.verify_access_token(token)
+  const sub = await functions.getUserID((verified_token[0] as string))
+  if (sub) {
+
+    if (sumname) {
+      await pool.query("update summaries set sumname = $1 where id=$2", [sumname, sum_id])
+    }
+    if (subject) {
+      await pool.query("update summaries set subject_id = $1 where id=$2", [subject, sum_id])
+    }
+    if (access!=undefined) {
+      console.log(access)
+      var current_access: Array<number> = (await pool.query(`
+      select userid 
+      from saccess, summaries, users
+      where 
+      users.id = $1
+      and summaries.id = $2
+      and saccess.summary = summaries.id
+      `, [sub, sum_id])).rows.map(entry => {
+        return entry.userid
+      })
+
+      var to_delete = [...current_access.filter(entry => {
+        return !access.includes(entry)
+      })]
+      var to_add = [...access.filter(entry => {
+        return !current_access.includes(entry)
+      })]
+
+      to_add.forEach(userid=>{
+        pool.query(`
+          insert into saccess
+          (summary, userid)
+          values($1, $2)
+        `, [sum_id, userid])
+      })
+      to_delete.forEach(userid=>{
+        pool.query(`
+          delete from saccess 
+          where summary = $1 
+          and userid = $2
+        `, [sum_id, userid])
+      })
+    }
   }
 
 

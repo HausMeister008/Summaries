@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { onMounted, ref, reactive, Ref, watch } from 'vue'
+import SelectAccessUserPanel from './SelectAccessUserPanel.vue'
 
 interface editSumProperties {
     sum_id: number,
@@ -20,7 +21,10 @@ const close = () => {
 interface categories {
     sumname: string,
     school_name: string,
-    subject?: number | string // subject id
+    subject?: number | string, // subject id
+    access: Array<number>,
+    saccess_amount?: number,
+    restricted?: boolean
 }
 
 
@@ -36,18 +40,22 @@ interface arriving_sums extends summary {
 }
 const sum: Array<summary> = reactive([])
 
+const showSelectedAccessUsersPanel: Ref<boolean> = ref(false)
+
 const update_inpt_form = ref()
 
 async function load_sum() {
     const res = await fetch(`/api/mysums?token=${localStorage.token}&searched_sum=${props.sum_id}`)
     const result: Array<arriving_sums> = await res.json()
     sum.splice(0, sum.length, result[0])
+    to_update.access = sum[0].access
 }
 
 const initial_state: categories = {
     sumname: '',
     school_name: '',
-    subject: ''
+    subject: '',
+    access: []
 }
 
 const to_update: categories = reactive({ ...initial_state })
@@ -59,6 +67,7 @@ async function update() {
             update_values[key] = value
         }
     })
+    update_values.access = to_update.access
     to_update.sumname = ''
     const res = await fetch(`/api/update_sum`, {
         method: 'POST',
@@ -69,6 +78,7 @@ async function update() {
             {
                 subject: update_values.subject,
                 sumname: update_values.sumname,
+                access: update_values.access,
                 token: localStorage.token,
                 sum_id: props.sum_id
             }
@@ -127,7 +137,7 @@ onMounted(() => {
         <div class="sum_edit" v-if="sum[0]">
             <h1>Du bearbeitest: "{{ sum[0].sumname }}"</h1>
             <form
-                @submit.prevent="update()"
+                @submit.prevent
                 action="/api/update_sum"
                 method="post"
                 ref="update_inpt_form"
@@ -145,21 +155,6 @@ onMounted(() => {
                 </div>
                 <div class="dropdown_menu edit_container">
                     <select
-                        name="subject"
-                        id="select_subject_dropdown"
-                        class="dropdown_input"
-                        v-model="to_update.subject"
-                        @change="get_dropdown_options"
-                    >
-                        <option value selected>Fachauswahl (kein Fach ausgewählt)</option>
-                        <option
-                            v-for="subject in options.subjects"
-                            :value="subject.id"
-                        >{{ subject.name }} (Klasse {{ subject.year }})</option>
-                    </select>
-                </div>
-                <div class="dropdown_menu edit_container">
-                    <select
                         name="school"
                         id="select_school_dropdown"
                         class="dropdown_input"
@@ -173,24 +168,61 @@ onMounted(() => {
                         >{{ school.name }} ({{ school.location }})</option>
                     </select>
                 </div>
-                <button type="submit" id="submitChanges">Änderungen übernehmen</button>
+                <div class="dropdown_menu edit_container">
+                    <select
+                        name="subject"
+                        id="select_subject_dropdown"
+                        class="dropdown_input"
+                        v-model="to_update.subject"
+                        @change="get_dropdown_options"
+                    >
+                        <option value selected>Fachauswahl (kein Fach ausgewählt)</option>
+                        <option
+                            v-for="subject in options.subjects"
+                            :value="subject.id"
+                        >{{ subject.name }} (Klasse {{ subject.year }})</option>
+                    </select>
+                </div>
+                <div class="edit_container">
+                    <button
+                        id="add_access"
+                        class="edit_button_inpt"
+                        @click="showSelectedAccessUsersPanel = true"
+                    >+</button>
+                    <label
+                        for="add_access"
+                    >Zugriff (Geändert: {{ 
+                    sum[0].access.length != to_update.access.length ? 
+                    'Ja (' + 
+                    (to_update.access.length - sum[0].access.length > 0 ?'+':'') + 
+                    (to_update.access.length - sum[0].access.length).toString() + 
+                    ')' : 
+                    'Nein' }})</label>
+                </div>
+                <button type="submit" id="submitChanges" @click="update()">Änderungen übernehmen</button>
             </form>
         </div>
+        <select-access-user-panel
+            v-if="to_update && sum[0]"
+            v-model:adduser_array="to_update.access"
+            v-model:show="showSelectedAccessUsersPanel"
+        />
     </div>
 </template>
 
 <style scoped>
 .sum_edit_panel {
     position: absolute;
-    width: 80%;
-    height: 90%;
+    width: 90%;
+    height: calc(100% - 30px);
     background: var(--anti_base);
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
     color: var(--base);
     padding: 2rem 0;
-    top:15px; /*enough space for box shadow*/
-    left: 10%;
+    top: 15px; /*enough space for box shadow*/
+    left: 5%;
+    z-index: 3;
     /* display: grid; */
     /* grid-template-rows: 2.5rem var(--search_height) auto; */
 }
@@ -287,7 +319,7 @@ onMounted(() => {
     color: var(--base);
 }
 .dropdown_menu option {
-    font-size: .9rem;
+    font-size: 0.9rem;
     text-align: center;
     background: var(--anti_base);
     color: var(--base);
@@ -296,19 +328,44 @@ onMounted(() => {
     background: var(--base);
     color: var(--anit_base);
 }
-#submitChanges{
+#submitChanges {
     margin-top: 2rem;
     font-size: 1.2rem;
     border: none;
-    padding: .5rem;
+    padding: 0.5rem;
     background: var(--anti_base);
     color: var(--base);
     box-shadow: 0 0 15px var(--box_shadows);
     border-radius: 5px;
-    transition: all 1s, transform .2s;
+    transition: all 1s, transform 0.2s;
 }
-#submitChanges:hover{
+#submitChanges:hover {
     cursor: pointer;
     transform: scale(1.05);
+}
+#add_access {
+    background: var(--anit_base);
+    color: var(--base);
+    border: 1px solid var(--base);
+    border-radius: 5px;
+    margin: 0 1rem 0 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: grid;
+    align-content: center;
+    outline: none;
+    transition: all 1s, background 0.5s, color 0.5s;
+}
+#add_access:hover {
+    cursor: pointer;
+    background: var(--base);
+    color: var(--anti_base);
+}
+.access_user_form {
+    position: absolute;
+    top: 15px;
+    left: 5%;
+    width: 90%;
+    height: calc(100% - 30px);
 }
 </style>

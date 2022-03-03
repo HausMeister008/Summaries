@@ -22,7 +22,7 @@ interface subject {
     year: number
 }
 
-interface school{
+interface school {
     name: string,
     location: string
 }
@@ -152,10 +152,7 @@ watch(school_inpt, (old_school, new_school) => {
 </script>
 
 <template>
-    <div
-        class="add_summary"
-        :style="'--scale: 1;'"
-    >
+    <div class="add_summary" :style="'--scale: 1;'">
         <div id="adding_sum_container">
             <form
                 id="create_sum_form"
@@ -165,6 +162,21 @@ watch(school_inpt, (old_school, new_school) => {
                 enctype="multipart/form-data"
                 @submit.prevent="submitSum()"
             >
+                <div class="dropdown_menu">
+                    <select
+                        name="school"
+                        id="select_school_dropdown"
+                        class="dropdown_input"
+                        required
+                        v-model="school_inpt"
+                    >
+                        <option value selected>Schule (keine Schule ausgewählt)</option>
+                        <option
+                            v-for="school in options.schools"
+                            :value="school.name"
+                        >{{ school.name }} ({{ school.location }})</option>
+                    </select>
+                </div>
                 <div class="dropdown_menu">
                     <select
                         name="subject"
@@ -177,19 +189,7 @@ watch(school_inpt, (old_school, new_school) => {
                         <option
                             v-for="subject in options.subjects"
                             :value="subject.id"
-                        >{{ subject.name }} (Klasse {{subject.year}})</option>
-                    </select>
-                </div>
-                <div class="dropdown_menu">
-                    <select
-                        name="school"
-                        id="select_school_dropdown"
-                        class="dropdown_input"
-                        required
-                        v-model="school_inpt"
-                    >
-                        <option value selected>Schule (keine Schule ausgewählt)</option>
-                        <option v-for="school in options.schools" :value="school.name">{{ school.name }} ({{school.location}})</option>
+                        >{{ subject.name }} (Klasse {{ subject.year }})</option>
                     </select>
                 </div>
                 <div class="sum_inpt_group">
@@ -285,7 +285,7 @@ watch(school_inpt, (old_school, new_school) => {
     left: calc(50% - 5px);
 }
 .add_summary {
-    --pad:2rem;
+    --pad: 2rem;
     transition: background 1s, color 1s, box-shadow 0.2s, padding 0.2s,
         height 0.5s;
     border-radius: 5px;
@@ -313,7 +313,7 @@ watch(school_inpt, (old_school, new_school) => {
     transform: scale(var(--scale));
     /* transform-origin: top; */
 }
-#create_sum_form{
+#create_sum_form {
     display: flex;
     flex-direction: column;
     align-items: center;
