@@ -146,7 +146,7 @@ watch(restrict_access, (n, o) => {
 <style scoped>
 .user_info {
     min-height: 250px;
-    max-height: calc(90vh - var(--nav_height));
+    max-height: calc(90vh - var(--top_margin));
     width: 80vw;
     box-shadow: 0 0 15px var(--box_shadows_dark);
     border-radius: 5px;
@@ -247,7 +247,7 @@ img.profile_image {
     position: relative;
     width: 90%;
     padding: 0 2rem 2rem 2rem;
-    height: calc(80vh - var(--nav_height) - 4rem);
+    height: calc(80vh - var(--top_margin) - 4rem);
     overflow: auto;
     scrollbar-width: thin;
 }

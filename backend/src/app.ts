@@ -509,5 +509,3 @@ const port = 8080
 const server = app.listen(port, () => {
   console.log('opened server on port', port);
 })
-
-

@@ -25,13 +25,15 @@ const lgn_or_rgstr = ref(true)
   justify-content: flex-start;
   align-items: center;
   flex-direction: column;
+  margin-top: calc(var(--top_margin) * 1.5);
+  position: relative;
   }
 #lgn_or_rgstr {
     display: none;
 }
 #lgn_or_rgstr_label {
     position: absolute;
-    top: 10vh;
+    top: 0;
     border-radius: 30px;
     background-color: transparent;
     height: 3rem;
@@ -127,7 +129,6 @@ const lgn_or_rgstr = ref(true)
     align-items: center;
     width: 100vw;
     height: 90vh;
-    margin-top: 10vh;
     color: var(--base);
     background: var(--anti_base);
 }

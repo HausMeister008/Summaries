@@ -50,8 +50,8 @@ onMounted(load)
 <style scoped>
 .user_list {
     width: 100%;
-    height: 100vh;
-    margin-top: calc(var(--search_height) + var(--nav_height));
+    height: calc(100vh - var(--search_height) - var(--top_margin));
+    margin-top: calc(var(--search_height) + var(--top_margin));
     background: var(--anti_base);
     box-shadow: inset 0 15px 15px -15px var(--box_shadows_dark);
     overflow: auto;
@@ -74,7 +74,6 @@ onMounted(load)
     height: var(--search_height);
     padding: 0 15vw;
     position: absolute;
-    top: var(--nav_height);
     background: var(--anti_base);
     color: var(--base);
 }

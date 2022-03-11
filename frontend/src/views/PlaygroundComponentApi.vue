@@ -40,6 +40,6 @@ export default defineComponent({
 
 <style scoped>
 .page{
-    margin-top: var(--nav_height);
+    margin-top: var(--top_margin);
 }
 </style>

@@ -7,13 +7,14 @@ import TopNavigation from "./components/TopNavigation.vue";
 const display_modes = {
   dark:
     `--base: #000; 
-      --anti_base: #ddd; 
+      --anti_base: #fff; 
       --box_shadows: #bcbcbc; 
       --box_shadows_dark: #bbb;
       --top_nav_bg:#333;
       --button_color_light: #fff;
       --button_color_dark: #ddd;
-      --button_bg: #f9f9f9;`,
+      --button_bg: #f9f9f9;
+      --small_nav_bg: #ddddddea;`,
   light:
     `--base: #fff; 
       --anti_base: #111;
@@ -22,7 +23,8 @@ const display_modes = {
       --top_nav_bg:#444;
       --button_color_light: #000;
       --button_color_dark: #222;
-      --button_bg: #090909;`
+      --button_bg: #090909;
+      --small_nav_bg: #000000ea;`
 }
 const display_mode = ref(localStorage.display_mode ?? 'DarkMode')
 const display_values = ref('')
@@ -57,6 +59,14 @@ onMounted(() => {
 :root {
   --search_height: 5rem;
   --nav_height: 4rem;
+  --top_margin: 4rem;
+}
+@media (max-width: 750px) {
+  :root {
+    --nav_height: 100vh;
+    --top_margin: 0;
+    /* --good_color:rgb(14, 70, 92); */
+  }
 }
 * {
   padding: 0;
@@ -79,7 +89,7 @@ button {
   align-items: center;
   flex-direction: column;
   font-family: Calibri;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--anti_base);
   transition: background 1s, color 1s;
 }
@@ -90,7 +100,8 @@ button {
 }
 .page {
   width: 100%;
-  height: calc(100vh - var(--nav_height));
+  height: calc(100vh - var(--top_margin));
+  margin-top: var(--top_margin);
   z-index: 9;
 }
 #light_dark_button {
@@ -102,11 +113,10 @@ button {
   border-radius: 30px;
   color: var(--base);
   background: var(--button_bg);
-  box-shadow: 
-  -5px -5px 20px var(--button_color_light),
-  5px 5px 10px var(--button_color_dark),
-  inset -2px -2px 5px var(--button_color_light),
-  inset 2px 2px 5px var(--button_color_dark);
+  box-shadow: -5px -5px 20px var(--button_color_light),
+    5px 5px 10px var(--button_color_dark),
+    inset -2px -2px 5px var(--button_color_light),
+    inset 2px 2px 5px var(--button_color_dark);
   transition: all 1s;
   bottom: 1.5rem;
   right: 1.5rem;

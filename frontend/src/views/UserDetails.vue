@@ -195,9 +195,9 @@ export default defineComponent({
 .user_detail_panel {
     --download_button_width: 75px;
     position: relative;
-    margin-top: var(--nav_height);
+    margin-top: var(--top_margin);
     width: 100%;
-    min-height: calc(100vh - var(--nav_height));
+    min-height: calc(100vh - var(--top_margin));
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -213,7 +213,7 @@ export default defineComponent({
 }
 .userinfo {
     position: fixed;
-    top: calc(var(--nav_height) + 3rem);
+    top: calc(var(--top_margin) + 3rem);
     width: 30vw;
     left: 35vw;
     display: flex;
@@ -377,13 +377,18 @@ export default defineComponent({
 .download,
 .rate {
     position: relative;
-    border-radius: 0 5px 5px 0;
     width: 100%;
     height: 100%;
     border: none;
     background: var(--anti_base);
     color: var(--base);
     font-size: 1.75rem;
+}
+.rate{
+    border-radius: 0 5px 5px 0;
+}
+.download{
+    border-radius:5px 0 0 5px;
 }
 .rate_input_container {
     --bubble_distance: 0.6rem;

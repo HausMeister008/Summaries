@@ -39,9 +39,6 @@
 
 <style scoped>
 #welcome{
-    margin-top: var(--nav_height);
-    width: 100vw;
-    height: calc(100vh - var(--nav_height));
     overflow: auto;
     scrollbar-width: thin;
     color: var(--base);
@@ -75,7 +72,7 @@
 @media (min-width: 700px) {
     .info_tag{
         width: 80vw;
-        margin-left: 10vw;
+        margin-inline: auto;
     }    
 }
 .info_tag h2{

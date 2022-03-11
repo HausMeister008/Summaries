@@ -7,6 +7,7 @@ const pwd_inpt = ref('')
 const firstname_inpt = ref('')
 const lastname_inpt = ref('')
 const creator_account_inpt = ref(false)
+const form = ref()
 
 
 const registered = ref(false)
@@ -49,6 +50,7 @@ async function register() {
             token.value = result.user_token
             //swith to profile here
             registered.value = true
+            form.value.reset()
         }
     }
     else if (result.user_exists) {
@@ -59,7 +61,7 @@ async function register() {
 
 <template>
     <div class="login">
-        <form action="/api/login" method="post" class="loginForm" @submit.prevent="register">
+        <form action="/api/login" method="post" class="loginForm" @submit.prevent="register" ref="form">
             <h1 class="loginHeadline">Register</h1>
             <div class="login_group">
                 <input

@@ -1,15 +1,6 @@
-<!-- <script setup lang="ts">
-
-export interface Properties {
-    specific_style?: string
-}
-
-const props = defineProps<Properties>();
-</script> -->
-
 <template>
   <div id="nav">
-    <router-link to="/">
+    <router-link to="/" class="logo_container">
       <svg
         xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
         xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -32,32 +23,115 @@ const props = defineProps<Properties>();
         />
       </svg>
     </router-link>
-    <router-link class="router_link" to="/">Home</router-link>
-    <router-link class="router_link" to="/login">Login / Registrieren</router-link>
-    <router-link class="router_link" to="/selection">Auswahl</router-link>
-    <router-link class="router_link" to="/userprofile">Profil</router-link>
+    <!-- <button class="mobile_nav_toggle"><span class="sr-only">Menu</span></button> -->
+
+    <ul class="nav_links">
+      <li class="nav_link_container">
+        <router-link class="router_link" to="/">Home</router-link>
+      </li>
+      <li class="nav_link_container">
+        <router-link class="router_link" to="/login">Login / Registrieren</router-link>
+      </li>
+      <li class="nav_link_container">
+        <router-link class="router_link" to="/selection">Auswahl</router-link>
+      </li>
+      <li class="nav_link_container">
+        <router-link class="router_link" to="/userprofile">Profil</router-link>
+      </li>
+    </ul>
   </div>
-  
 </template>
 
 <style scoped>
-
 #nav {
   position: fixed;
   top: 0;
   height: var(--nav_height);
   background: var(--anti_base);
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 5rem;
+  display: grid;
+  grid-template-columns: 5rem calc(100% - 5.5rem);
   z-index: 10;
 }
+
 #nav * {
   font-size: 1.5rem;
   text-decoration: none;
   font-weight: 900;
+}
+.nav_links {
+  height: 100%;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+li {
+  list-style-type: none;
+}
+.nav_link_container {
+  overflow: hidden;
+  min-height: 3rem;
+  display: flex;
+}
+.logo_container {
+  margin-top: 0.5rem;
+}
+.sr-only{
+  width: 1px;
+  height: 1px;
+  position:absolute;
+  margin: -1px;
+  border: 0;
+  overflow:hidden;
+  clip: rect(0, 0, 0, 0);
+}
+@media (max-width: 750px) {
+  #nav {
+    display: block;
+    inset: 0 0 0 20%;
+    max-width: 80%;
+    padding: min(25vh, 10rem) 2rem 0 2rem;
+    backdrop-filter: blur(.34rem);
+    background: var(--small_nav_bg);
+  }
+  .nav_links {
+    position: relative;
+    flex-direction: column;
+    justify-content: right;
+    align-items: baseline;
+    gap: var(--gap, 1.5rem);
+  }
+  .logo_container {
+    position: absolute;
+    top: .5rem;
+    left: calc(50% - 2.75rem/2);
+  }
+  #logosvg {
+    height: 2.75rem;
+  }
+  .nav_link_container{
+    width: 100%;
+    }
+  .router_link {
+    width: 100%;
+    text-align: center;
+  }
+  .mobile_nav_toggle{
+    z-index: 9999;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2rem;
+    aspect-ratio: 1;
+    background: linear-gradient(to bottom, var(--base) 20%, transparent 40%, var(--base) 60%, transparent 80%, var(--base) 100%);
+    border: none;
+    outline: none;
+  }
+  .mobile_nav_toggle:hover{
+    cursor: pointer;
+  }
 }
 .router_link {
   padding: 0.5rem 1.5rem;

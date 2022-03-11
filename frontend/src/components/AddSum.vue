@@ -3,6 +3,7 @@ import { ref, watch, onMounted, reactive, Ref } from 'vue'
 import throttle from 'lodash/throttle';
 
 import CustomCheckbox from '../components/CustomCheckbox.vue'
+import AddSumSelectionPossibility from '../components/AddSumSelectionPossibility.vue';
 
 const adding_sum = ref(false)
 const subject_inpt = ref('')
@@ -15,6 +16,8 @@ const file = ref()
 const file_count = ref(0)
 const progress = ref(0)
 const form: Ref<HTMLFormElement | undefined> = ref()
+const addingSchool: Ref<boolean> = ref(false)
+const addingSubject: Ref<boolean> = ref(false)
 
 interface subject {
     name: string,
@@ -175,6 +178,7 @@ watch(school_inpt, (old_school, new_school) => {
                             v-for="school in options.schools"
                             :value="school.name"
                         >{{ school.name }} ({{ school.location }})</option>
+                        <option value @click="addingSchool = true">Schule hinzufügen</option>
                     </select>
                 </div>
                 <div class="dropdown_menu">
@@ -190,6 +194,7 @@ watch(school_inpt, (old_school, new_school) => {
                             v-for="subject in options.subjects"
                             :value="subject.id"
                         >{{ subject.name }} (Klasse {{ subject.year }})</option>
+                        <option value @click="addingSubject = true">Fach hinzufügen</option>
                     </select>
                 </div>
                 <div class="sum_inpt_group">
@@ -253,6 +258,8 @@ watch(school_inpt, (old_school, new_school) => {
                 </div>
             </form>
         </div>
+        <add-sum-selection-possibility toChangeName="Schule" v-model:show="addingSchool" v-if="addingSchool"/>
+        <add-sum-selection-possibility toChangeName="Fach" v-model:show="addingSubject" v-if="addingSubject"/>
     </div>
 </template>
 <style scoped>

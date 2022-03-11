@@ -5,6 +5,7 @@ const username_inpt = ref('')
 const pwd_inpt = ref('')
 const route = useRoute()
 const logged_in = ref(false)
+const form = ref()
 async function login() {
     // console.log(username_inpt.value, pwd_inpt.value)
     var response = await fetch(`/api/login`, {
@@ -24,13 +25,13 @@ async function login() {
         token.value = result.user_token
         //swith to profile here
         logged_in.value = true
-        console.log(logged_in.value)
+        form.value.reset()
     }
 }
 </script>
 <template>
     <div class="login">
-        <form action="/api/login" method="post" class="loginForm" @submit.prevent="login">
+        <form action="/api/login" method="post" class="loginForm" @submit.prevent="login" ref="form">
             <h1 class="loginHeadline">Login</h1>
             <div class="login_group">
                 <input

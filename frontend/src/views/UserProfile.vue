@@ -45,10 +45,11 @@ onMounted(get_user_data)
 <style scoped>
 .userprofile{
     position: relative;
-    margin-top: var(--nav_height);
+    margin-top: var(--top_margin);
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
+    height: calc(100vh - var(--top_margin));
 }
 </style>

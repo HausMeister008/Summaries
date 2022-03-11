@@ -31,6 +31,6 @@ const data = reactive({
 
 <style scoped>
 .page{
-    margin-top: var(--nav_height);
+    margin-top: var(--top_margin);
 }
 </style>
