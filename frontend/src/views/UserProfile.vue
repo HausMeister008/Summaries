@@ -52,4 +52,10 @@ onMounted(get_user_data)
     flex-direction: column;
     height: calc(100vh - var(--top_margin));
 }
+@media (max-width: 750px){
+    .userprofile{
+        height: 100vh;
+        margin:auto;
+    }
+}
 </style>

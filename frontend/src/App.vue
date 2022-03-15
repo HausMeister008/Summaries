@@ -4,42 +4,7 @@
 // import { reactive, ref, onMounted, watch } from "vue";
 import { ref, onMounted } from "vue";
 import TopNavigation from "./components/TopNavigation.vue";
-const display_modes = {
-  dark:
-    `--base: #000; 
-      --anti_base: #fff; 
-      --box_shadows: #bcbcbc; 
-      --box_shadows_dark: #bbb;
-      --top_nav_bg:#333;
-      --button_color_light: #fff;
-      --button_color_dark: #ddd;
-      --button_bg: #f9f9f9;
-      --small_nav_bg: #ddddddea;`,
-  light:
-    `--base: #fff; 
-      --anti_base: #111;
-      --box_shadows: #050505;
-      --box_shadows_dark: #000; 
-      --top_nav_bg:#444;
-      --button_color_light: #000;
-      --button_color_dark: #222;
-      --button_bg: #090909;
-      --small_nav_bg: #000000ea;`
-}
-const display_mode = ref(localStorage.display_mode ?? 'DarkMode')
-const display_values = ref('')
-function set_display_mode(mode: string) {
-  display_values.value = mode == 'LightMode' ? display_modes.light : display_modes.dark
-  document.getElementById('app')?.setAttribute('style', display_values.value)
-}
-function switch_display_mode() {
-  display_mode.value = display_mode.value == 'LightMode' ? 'DarkMode' : 'LightMode'
-  localStorage.display_mode = display_mode.value
-  set_display_mode(display_mode.value)
-}
-onMounted(() => {
-  set_display_mode(display_mode.value)
-})
+
 
 </script>
 
@@ -50,7 +15,6 @@ onMounted(() => {
       <component :is="Component" :key="route.path" />
     </transition>
   </router-view>
-  <button id="light_dark_button" @click="switch_display_mode">{{ display_mode }}</button>
 </template>
 
 
@@ -104,28 +68,6 @@ button {
   margin-top: var(--top_margin);
   z-index: 9;
 }
-#light_dark_button {
-  position: absolute;
-  font-size: 1.2rem;
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 30px;
-  color: var(--base);
-  background: var(--button_bg);
-  box-shadow: -5px -5px 20px var(--button_color_light),
-    5px 5px 10px var(--button_color_dark),
-    inset -2px -2px 5px var(--button_color_light),
-    inset 2px 2px 5px var(--button_color_dark);
-  transition: all 1s;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  /* opacity: 0.7; */
-  z-index: 20;
-}
-#light_dark_button:hover {
-  cursor: pointer;
-}
 .slide-enter-from {
   transform: translateY(-10%);
   opacity: 0;
@@ -137,5 +79,20 @@ button {
 .slide-leave-active,
 .slide-enter-active {
   transition: transform 0.4s, opacity 0.4s;
+}
+
+@media (max-width: 750px) {
+  .slide-enter-from {
+    transform: translateX(-10%);
+    opacity: 0;
+  }
+  .slide-leave-to {
+    transform: translateX(20%);
+    opacity: 0;
+  }
+  .slide-leave-active,
+  .slide-enter-active {
+    transition: transform 0.3s ease-out, opacity 0.3s;
+  }
 }
 </style>

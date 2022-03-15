@@ -1,5 +1,91 @@
+<script lang="ts" setup>
+import { ref, Ref, watch, onMounted } from 'vue'
+
+const mobile_nav_visible: Ref<boolean> = ref(false)
+const mobile_version_active: Ref<boolean> = ref(false)
+const windowHeight = ref(window.innerWidth)
+
+
+watch(windowHeight, (n, o) => {
+  console.log(n, o)
+})
+
+function checkIfMobile() {
+  if (window.innerWidth > 750) {
+    console.log('desktop version')
+    mobile_version_active.value = false
+    mobile_nav_visible.value = false
+  } else if (window.innerWidth <= 750) {
+    console.log('mobile version')
+    mobile_version_active.value = true
+  }
+}
+
+
+onMounted(() => {
+  checkIfMobile()
+  window.addEventListener('resize', () => {
+    checkIfMobile()
+  })
+})
+const display_modes = {
+  dark:
+    `--base: #000; 
+      --anti_base: #fff; 
+      --box_shadows: #bcbcbc; 
+      --box_shadows_dark: #bbb;
+      --top_nav_bg:#333;
+      --button_color_light: ${mobile_version_active ? '#ffffffea' : '#fff'};
+      --button_color_dark:${mobile_version_active ? '#ddddddea' : '#ddd'} ;
+      --button_bg: ${mobile_version_active ? '#f9f9f9ea' : '#f9f9f9'};
+      --small_nav_bg: #ddddddea;`,
+  light:
+    `--base: #fff; 
+      --anti_base: #111;
+      --box_shadows: #050505;
+      --box_shadows_dark: #000; 
+      --top_nav_bg:#444;
+      --button_color_light: ${mobile_version_active ? '#000000ea' : '#000'};
+      --button_color_dark: ${mobile_version_active ? '#222222ea' : '#222'};
+      --button_bg: ${mobile_version_active ? '#090909ea' : '#090909'};
+      --small_nav_bg: #000000ea;`
+}
+
+
+function switch_display_mode() {
+  display_mode.value = display_mode.value == 'LightMode' ? 'DarkMode' : 'LightMode'
+  localStorage.display_mode = display_mode.value
+  set_display_mode(display_mode.value)
+}
+
+const display_mode = ref(localStorage.display_mode ?? 'DarkMode')
+const display_values = ref('')
+function set_display_mode(mode: string) {
+  display_values.value = mode == 'LightMode' ? display_modes.light : display_modes.dark
+  document.getElementById('app')?.setAttribute('style', display_values.value)
+}
+onMounted(() => {
+  set_display_mode(display_mode.value)
+})
+</script>
+
 <template>
-  <div id="nav">
+  <button
+    class="mobile_nav_toggle"
+    :class="mobile_nav_visible ? 'open' : 'closed'"
+    @click="mobile_nav_visible = !mobile_nav_visible"
+  >
+    <span class="sr-only">Menu</span>
+  </button>
+  <button
+    id="light_dark_button"
+    @click="switch_display_mode"
+    v-if="!mobile_version_active"
+  >{{ display_mode }}</button>
+  <div
+    id="nav"
+    :class="mobile_version_active ? 'mobile ' + (mobile_nav_visible ? 'mobile_version_visible' : 'mobile_version_invisible') : ''"
+  >
     <router-link to="/" class="logo_container">
       <svg
         xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
@@ -23,22 +109,43 @@
         />
       </svg>
     </router-link>
-    <!-- <button class="mobile_nav_toggle"><span class="sr-only">Menu</span></button> -->
 
-    <ul class="nav_links">
-      <li class="nav_link_container">
-        <router-link class="router_link" to="/">Home</router-link>
+    <ul class="nav_links" style="--link_amount: 4;">
+      <li class="nav_link_container" style="--link_nr: 0;">
+        <router-link
+          class="router_link"
+          to="/"
+          @click="mobile_nav_visible = !mobile_nav_visible"
+        >Home</router-link>
       </li>
-      <li class="nav_link_container">
-        <router-link class="router_link" to="/login">Login / Registrieren</router-link>
+      <li class="nav_link_container" style="--link_nr: 1;">
+        <router-link
+          class="router_link"
+          to="/login"
+          @click="mobile_nav_visible = !mobile_nav_visible"
+        >Login / Registrieren</router-link>
       </li>
-      <li class="nav_link_container">
-        <router-link class="router_link" to="/selection">Auswahl</router-link>
+      <li class="nav_link_container" style="--link_nr: 2;">
+        <router-link
+          class="router_link"
+          to="/selection"
+          @click="mobile_nav_visible = !mobile_nav_visible"
+        >Auswahl</router-link>
       </li>
-      <li class="nav_link_container">
-        <router-link class="router_link" to="/userprofile">Profil</router-link>
+      <li class="nav_link_container" style="--link_nr: 3;">
+        <router-link
+          class="router_link"
+          to="/userprofile"
+          @click="mobile_nav_visible = !mobile_nav_visible"
+        >Profil</router-link>
       </li>
     </ul>
+    <button
+      id="light_dark_button"
+      :class="mobile_version_active ? 'mobile' : ''"
+      @click="switch_display_mode"
+      v-if="mobile_version_active"
+    >{{ display_mode }}</button>
   </div>
 </template>
 
@@ -51,13 +158,18 @@
   width: 100%;
   display: grid;
   grid-template-columns: 5rem calc(100% - 5.5rem);
-  z-index: 10;
+  z-index: 100;
+  transition: color 1s, background 1s, height 0s, transform 0s, top 0s, left 0s,
+    margin 0s;
 }
 
 #nav * {
   font-size: 1.5rem;
   text-decoration: none;
   font-weight: 900;
+}
+.mobile_nav_toggle {
+  display: none;
 }
 .nav_links {
   height: 100%;
@@ -78,23 +190,55 @@ li {
 .logo_container {
   margin-top: 0.5rem;
 }
-.sr-only{
+.sr-only {
   width: 1px;
   height: 1px;
-  position:absolute;
+  position: absolute;
   margin: -1px;
   border: 0;
-  overflow:hidden;
+  overflow: hidden;
   clip: rect(0, 0, 0, 0);
+}
+
+#light_dark_button {
+  position: absolute;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 30px;
+  color: var(--base);
+  background: var(--button_bg);
+  box-shadow: -5px -5px 20px var(--button_color_light),
+    5px 5px 10px var(--button_color_dark),
+    inset -2px -2px 5px var(--button_color_light),
+    inset 2px 2px 5px var(--button_color_dark);
+  transition: all 1s;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  /* opacity: 0.7; */
+  z-index: 20;
+}
+#light_dark_button:hover {
+  cursor: pointer;
 }
 @media (max-width: 750px) {
   #nav {
     display: block;
-    inset: 0 0 0 20%;
+    inset: 0 0 0 100%;
     max-width: 80%;
     padding: min(25vh, 10rem) 2rem 0 2rem;
-    backdrop-filter: blur(.34rem);
+    backdrop-filter: blur(0.34rem);
     background: var(--small_nav_bg);
+  }
+  #nav.mobile {
+    transition: all 1s, transform 0.6s ease-out;
+  }
+  #nav.mobile_version_invisible {
+    transform: translateX(0%);
+  }
+  #nav.mobile_version_visible {
+    transform: translateX(-100%);
   }
   .nav_links {
     position: relative;
@@ -102,35 +246,76 @@ li {
     justify-content: right;
     align-items: baseline;
     gap: var(--gap, 1.5rem);
+    overflow: auto;
+    padding-bottom: 2rem;
   }
   .logo_container {
     position: absolute;
-    top: .5rem;
-    left: calc(50% - 2.75rem/2);
+    top: 0.5rem;
+    left: calc(50% - 2.75rem / 2);
   }
   #logosvg {
     height: 2.75rem;
   }
-  .nav_link_container{
+  .nav_link_container {
     width: 100%;
-    }
+    transition: all 1s, transform 0.65s ease-in-out;
+    transition-delay: calc(0.1s * var(--link_nr));
+  }
+  #nav.mobile_version_visible > .nav_links > .nav_link_container {
+    transform: translateX(0%);
+  }
+  #nav.mobile_version_invisible > .nav_links > .nav_link_container {
+    transform: translateX(50%);
+  }
   .router_link {
     width: 100%;
     text-align: center;
   }
-  .mobile_nav_toggle{
+  .mobile_nav_toggle {
+    display: block;
     z-index: 9999;
     position: absolute;
     top: 1rem;
     right: 1rem;
-    width: 2rem;
+    width: 1.75rem;
     aspect-ratio: 1;
-    background: linear-gradient(to bottom, var(--base) 20%, transparent 40%, var(--base) 60%, transparent 80%, var(--base) 100%);
     border: none;
     outline: none;
-  }
-  .mobile_nav_toggle:hover{
     cursor: pointer;
+  }
+  .mobile_nav_toggle.closed {
+    background: linear-gradient(
+      to bottom,
+      var(--base) 0% 15%,
+      transparent 0% 42.5%,
+      var(--base) 0% 57.5%,
+      transparent 0% 85%,
+      var(--base) 0% 100%
+    );
+  }
+  .mobile_nav_toggle.open {
+    background: linear-gradient(
+        45deg,
+        transparent 0% 45%,
+        var(--base) 0% 55%,
+        transparent 0% 100%
+      ),
+      linear-gradient(
+        135deg,
+        transparent 0% 45%,
+        var(--base) 0% 55%,
+        transparent 0% 100%
+      );
+  }
+
+  #light_dark_button {
+    font-size: 1.4rem;
+    padding: 1rem 2rem;
+    border-radius: 20px;
+    bottom:1.5rem;
+    right: 2rem;
+    z-index: 20;
   }
 }
 .router_link {

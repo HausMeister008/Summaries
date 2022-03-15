@@ -21,6 +21,7 @@ function close(){
 <div class="addValContainer">
     <button id="closeContainer" @click="close">🗙</button>
     <h1>{{props.toChangeName}} Hinzufügen</h1>
+    <h3>Funktion noch nicht ausgearbeitet</h3>
 </div>
 </template>
 

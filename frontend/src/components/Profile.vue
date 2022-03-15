@@ -2,7 +2,9 @@
 import AddSum from './AddSum.vue'
 import { ref, Ref, watch } from 'vue'
 import SelectAccessUserPanel from './SelectAccessUserPanel.vue';
-import MySummaries from './MySummaries.vue';
+
+import UserProfileData from './UserProfileData.vue';
+import UserProfileSums from './UserProfileSums.vue';
 
 export interface Properties {
     username: string,
@@ -16,7 +18,7 @@ export interface Properties {
 
 const showSelectedAccessUsersPanel: Ref<boolean> = ref(false)
 const restrict_access: Ref<boolean> = ref(false)
-const searched_sum:Ref<string> = ref('')
+const searched_sum: Ref<string> = ref('')
 
 
 const props = defineProps<Properties>();
@@ -52,9 +54,9 @@ watch(restrict_access, (n, o) => {
 </script>
 <template>
     <div class="user_info">
-        <div id="profile_top">
+        <div id="profile_sections">
             <button
-                class="profile_image_container profile_top_button"
+                class="profile_image_container profile_sections_button"
                 @mouseenter="transition_vars(0)"
                 @click="show_profile_not_files = 0"
                 title="Mein Profil"
@@ -67,7 +69,7 @@ watch(restrict_access, (n, o) => {
                 />
             </button>
             <button
-                class="profile_image_container profile_top_button"
+                class="profile_image_container profile_sections_button"
                 @mouseenter="transition_vars(1)"
                 @click="show_profile_not_files = 1"
                 :class="show_profile_not_files == 1 ? 'active' : ''"
@@ -88,7 +90,7 @@ watch(restrict_access, (n, o) => {
                 </svg>
             </button>
             <button
-                class="profile_image_container profile_top_button"
+                class="profile_image_container profile_sections_button"
                 @mouseenter="transition_vars(2)"
                 @click="show_profile_not_files = 2"
                 title="Zusammenfassungen hochladen"
@@ -100,33 +102,20 @@ watch(restrict_access, (n, o) => {
             </button>
         </div>
         <transition name="change_profile_content" mode="out-in">
-            <div class="user_data" v-if="show_profile_not_files == 0">
-                <h1
-                    class="profile_headline profile_part_headline"
-                >{{ props.firstname }} {{ props.lastname }}</h1>
-                <p class="profile_component">Benutzername: {{ props.username }}</p>
-                <p
-                    v-if="props.is_creator"
-                    class="profile_component"
-                >Hochgeladene Zusammenfassungen: {{ props.nSummaries }}</p>
-                <p
-                    v-if="props.is_creator"
-                    class="profile_component"
-                >Durchschnittliche Bewertung: {{ props.avg_rating ? props.avg_rating : 'Keine vorhanden' }}</p>
-            </div>
-            <div
-                class="user_sums"
-                v-else-if="show_profile_not_files == 1 && props.is_creator"
-                :style="`--slide_direction:${middle_slide_direction}`"
-            >
-                <h1 class="profile_part_headline">Meine Zusammenfassungen</h1>
-                <div id="search">
-                    <input id="searchBar" type="search" v-model="searched_sum" required />
-                    <label id="searchBarLabel" for="searchBar">Suche (Name, Fach oder Schule)...</label>
-                    <!-- <div>Du suchst nach {{ username }}</div> -->
-                </div>
-                <my-summaries v-model:searched_sum="searched_sum"/>
-            </div>
+            <user-profile-data
+                v-if="show_profile_not_files == 0"
+                :username="props.username"
+                :nSummaries="props.nSummaries"
+                :firstname="props.firstname"
+                :lastname="props.lastname"
+                :avg_rating="props.avg_rating"
+                :is_creator="props.is_creator"
+            ></user-profile-data>
+            <user-profile-sums 
+            :middle_slide_direction="middle_slide_direction"
+            v-model:searched_sum="searched_sum"
+            v-else-if="show_profile_not_files == 1 && props.is_creator"></user-profile-sums>
+
             <div class="add_sum" v-else-if="show_profile_not_files == 2 && props.is_creator">
                 <h1 class="profile_part_headline">Zusammenfassungen hochladen</h1>
                 <add-sum
@@ -144,158 +133,160 @@ watch(restrict_access, (n, o) => {
     />
 </template>
 <style scoped>
-.user_info {
-    min-height: 250px;
-    max-height: calc(90vh - var(--top_margin));
-    width: 80vw;
-    box-shadow: 0 0 15px var(--box_shadows_dark);
-    border-radius: 5px;
-    margin-top: 50px;
-    color: var(--base);
-    background: var(--anti_base);
-    padding: 4rem 0 0 0;
-    position: relative;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    transition: all 1s, height 0.2s, width 0s;
-}
-.profile_component {
-    margin-top: 1.5rem;
-    font-size: 1.2rem;
-}
-.profile_headline {
-    margin-top: 10px;
-}
-.profile_part_headline {
-    position: sticky;
-    top: 0;
-}
-#profile_top {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    position: absolute;
-    top: 0;
-    transform: translateY(-50px); /*translateX(-180%)*/
-}
-#profile_top * + * {
-    margin-left: 1.5rem;
-}
-.profile_image_container {
-    --width: 100px;
-    width: var(--width);
-    height: var(--width);
-    padding: 10px;
-    border-radius: 50%;
-    background: var(--anti_base);
-    position: relative;
-    z-index: 2;
-    box-shadow: 0 -5px 5px var(--box_shadows);
-}
-.profile_image_container::before,
-.profile_image_container::after {
-    content: "";
-    position: absolute;
-    top: 0px;
-    width: calc(var(--width) / 2);
-    height: calc(var(--width) / 2);
-    background: transparent;
-    border-radius: 50%;
-    z-index: -1;
-    transition: background 1s, box-shadow 1s;
-}
-.profile_image_container::before {
-    left: calc(var(--width) / -2);
-    transform: translateX(4px);
-    box-shadow: 21px 33px var(--anti_base);
-}
-.profile_image_container::after {
-    right: calc(var(--width) / -2);
-    transform: translateX(-4px);
-    box-shadow: -21px 33px var(--anti_base);
-}
-.profile_top_button {
-    border: none;
-    outline: none;
-    background: var(--anti_base);
-    color: var(--base);
-}
-.profile_top_button:hover {
-    cursor: pointer;
-}
-.profile_image {
-    object-fit: cover;
-    width: 90%;
-    height: 90%;
-    border-radius: 50px;
-    transition: all 1s, transform 0.2s;
-}
+@media (min-width: 750px) {
+    .user_info {
+        min-height: 250px;
+        max-height: calc(90vh - var(--top_margin));
+        width: 80vw;
+        box-shadow: 0 0 15px var(--box_shadows_dark);
+        border-radius: 5px;
+        margin-top: 50px;
+        color: var(--base);
+        background: var(--anti_base);
+        padding: 4rem 0 0 0;
+        position: relative;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        transition: all 1s, height 0.2s, width 0s;
+    }
+    .profile_component {
+        margin-top: 1.5rem;
+        font-size: 1.2rem;
+    }
+    .profile_headline {
+        margin-top: 10px;
+    }
+    .profile_part_headline {
+        position: sticky;
+        top: 0;
+    }
+    #profile_sections {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        transform: translateY(-50px); /*translateX(-180%)*/
+    }
+    #profile_sections * + * {
+        margin-left: 1.5rem;
+    }
+    .profile_image_container {
+        --width: 100px;
+        width: var(--width);
+        height: var(--width);
+        padding: 10px;
+        border-radius: 50%;
+        background: var(--anti_base);
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 -5px 5px var(--box_shadows);
+    }
+    .profile_image_container::before,
+    .profile_image_container::after {
+        content: "";
+        position: absolute;
+        top: 0px;
+        width: calc(var(--width) / 2);
+        height: calc(var(--width) / 2);
+        background: transparent;
+        border-radius: 50%;
+        z-index: -1;
+        transition: background 1s, box-shadow 1s;
+    }
+    .profile_image_container::before {
+        left: calc(var(--width) / -2);
+        transform: translateX(4px);
+        box-shadow: 21px 33px var(--anti_base);
+    }
+    .profile_image_container::after {
+        right: calc(var(--width) / -2);
+        transform: translateX(-4px);
+        box-shadow: -21px 33px var(--anti_base);
+    }
+    .profile_sections_button {
+        border: none;
+        outline: none;
+        background: var(--anti_base);
+        color: var(--base);
+    }
+    .profile_sections_button:hover {
+        cursor: pointer;
+    }
+    .profile_image {
+        object-fit: cover;
+        width: 90%;
+        height: 90%;
+        border-radius: 50%;
+        transition: all 1s, transform 0.2s;
+    }
 
-img.profile_image {
-    filter: grayscale(1);
-    transition: all 1s, transform 0.2s, grayscale 0.75s;
-}
+    img.profile_image {
+        filter: grayscale(1);
+        transition: all 1s, transform 0.2s, grayscale 0.75s;
+    }
 
-.user_data,
-.user_sums,
-.add_sum {
-    position: relative;
-    width: 90%;
-    padding: 0 2rem 2rem 2rem;
-    height: calc(80vh - var(--top_margin) - 4rem);
-    overflow: auto;
-    scrollbar-width: thin;
-}
+    .user_data,
+    .user_sums,
+    .add_sum {
+        position: relative;
+        width: 90%;
+        padding: 0 2rem 2rem 2rem;
+        height: calc(80vh - var(--top_margin) - 4rem);
+        overflow: auto;
+        scrollbar-width: thin;
+    }
 
-.user_data {
-    --slide_direction: -1;
-}
-.add_sum {
-    --slide_direction: 1;
-}
+    .user_data {
+        --slide_direction: -1;
+    }
+    .add_sum {
+        --slide_direction: 1;
+    }
 
-#edit_sums_svg {
-    padding: 0.2rem;
-}
+    #edit_sums_svg {
+        padding: 0.2rem;
+    }
 
-#addsum_interface_button span {
-    font-size: 3rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
+    #addsum_interface_button span {
+        font-size: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
 
-.profile_top_button.active > img {
-    filter: grayscale(0);
-}
-.profile_top_button > svg {
-    background: var(--anti_base);
-    fill: var(--base);
-}
+    .profile_sections_button.active > img {
+        filter: grayscale(0);
+    }
+    .profile_sections_button > svg {
+        background: var(--anti_base);
+        fill: var(--base);
+    }
 
-.profile_top_button > span {
-    color: var(--base);
-    background: var(--anti_base);
-}
-.profile_top_button.active > svg {
-    background: var(--base);
-    fill: var(--anti_base);
-}
+    .profile_sections_button > span {
+        color: var(--base);
+        background: var(--anti_base);
+    }
+    .profile_sections_button.active > svg {
+        background: var(--base);
+        fill: var(--anti_base);
+    }
 
-.profile_top_button.active > span {
-    background: var(--base);
-    color: var(--anti_base);
-}
+    .profile_sections_button.active > span {
+        background: var(--base);
+        color: var(--anti_base);
+    }
 
-.profile_top_button:hover > .profile_image {
-    transform: scale(1.1);
+    .profile_sections_button:hover > .profile_image {
+        transform: scale(1.1);
+    }
 }
 
 .change_profile_content-enter-from {
@@ -310,50 +301,93 @@ img.profile_image {
 .change_profile_content-enter-active {
     transition: transform 0.4s, opacity 0.4s;
 }
-#search {
-    width: 100%;
-    height: var(--search_height);
-    padding: 0 15%;
-    position: relative;
-    background: var(--anti_base);
-    color: var(--base);
-}
+@media (max-width: 750px) {
+    .user_info {
+        height: 100vh;
+        width: 100%;
+        display: grid;
+        grid-template-rows: 8rem auto;
+        position: relative;
+    }
+    #profile_sections {
+        position: fixed;
+        bottom: 0;
+        top: unset;
+        height: auto;
+        width: 100%;
+        display: grid;
+        align-content: center;
+        align-items: flex-end;
+        grid-template-columns: 33% 34% 33%;
+    }
+    .profile_image_container {
+        padding: 0.5rem;
+        border-radius: 0;
+        background: var(--anti_base);
+        position: relative;
+        z-index: 2;
+    }
+    .profile_sections_button {
+        border: none;
+        border-radius: 10px 10px 0 0;
+        outline: none;
+        background: var(--anti_base);
+        color: var(--base);
+        transition: all 1s, border 0.5s, border-radius 0.5s, transform 0.2s;
+        transform-origin: bottom;
+        aspect-ratio: 1;
+    }
+    .profile_sections_button:hover {
+        cursor: pointer;
+    }
+    .profile_image {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        transition: all 1s, transform 0.2s;
+    }
 
-#search * {
-    font-size: 1.1rem;
-    font-weight: 600;
-    background: var(--anti_base);
-    color: var(--base);
-}
-#searchBar {
-    width: 100%;
-    height: 2.5rem;
-    position: relative;
-    margin-top: 1rem;
-    padding: 0 1rem;
-    outline: none;
-    border: none;
-    background: transparent;
-    border-bottom: 2px solid #aaa;
-    transition: border-color 0.2s;
-}
-#searchBar:focus,
-#searchBar:valid {
-    border-bottom-color: var(--base);
-}
-#searchBarLabel {
-    position: absolute;
-    background: transparent;
-    color: #888;
-    left: calc(15% + 1rem);
-    top: 1.5rem;
-    transition: top 0.2s, font-size 0.2s, color 0.2s, opacity 0.2s;
-}
-#searchBar:focus ~ #searchBarLabel,
-#searchBar:valid ~ #searchBarLabel {
-    top: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--base);
-    opacity: 0.5;
+    img.profile_image {
+        filter: grayscale(1);
+        transition: all 1s, transform 0.2s, grayscale 0.75s;
+    }
+    .profile_sections_button.active {
+        background: var(--base);
+    }
+    .profile_sections_button.active > img {
+        filter: grayscale(0);
+    }
+    .profile_sections_button > svg {
+        background: var(--anti_base);
+        fill: var(--base);
+    }
+
+    .profile_sections_button > span {
+        color: var(--base);
+        background: var(--anti_base);
+    }
+    .profile_sections_button.active > svg {
+        fill: var(--anti_base);
+        background: var(--base);
+    }
+
+    .profile_sections_button.active > span {
+        background: var(--base);
+        color: var(--anti_base);
+    }
+
+    .profile_sections_button:hover > .profile_image {
+        transform: scale(1.1);
+    }
+
+    #addsum_interface_button span {
+        font-size: 3rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+    }
 }
 </style>

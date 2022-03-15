@@ -1,81 +1,3 @@
-<script setup lang="ts">
-</script>
-<template>
-    <div class="page">
-        <div class="userinfo">
-            <h1 id="username_hdln">{{ userName }}</h1>
-        </div>
-        <div class="user_detail_panel">
-            <div class="infos" v-if="usersums.length > 0" v-for="sum in usersums">
-                <input
-                    class="user_sum_checkbox"
-                    type="checkbox"
-                    :name="sum.id.toString()"
-                    :id="sum.id.toString()"
-                    :value="sum.id"
-                    v-model="checked_sums"
-                />
-                <label :for="sum.id.toString()" class="user_sum">
-                    <div class="user_sum_info">
-                        <p>{{ sum.subject_name }}</p>
-                        <div
-                            :class="'rat' + sum.rating.toString() + ' sumrating'"
-                            :title="sum.ratingamount + ' Bewertungen'"
-                        >
-                            <div class="rating">{{ sum.rating }}</div>
-                            <svg
-                                id="rating_svg"
-                                :style="'--rating_num:' + sum.rating_num.toString() + ';'"
-                            >
-                                <circle cx="1rem" cy="1rem" r="1rem" />
-                                <circle cx="1rem" cy="1rem" r="1rem" />
-                            </svg>
-                        </div>
-                        <p>{{ sum.sumname }}</p>
-                        <p>{{ formatDate(sum.Date) }} - {{ formatTime(sum.Date) }}</p>
-                    </div>
-                    <transition name="show_detail_info">
-                        <div class="detail_info" v-if="checked_sums.includes(sum.id)">
-                            <p>Schule: {{ sum.school_name }}</p>
-                            <p>Ort: {{ sum.location_name }}</p>
-                            <p>Klassenstufe {{ sum.subject_year }}</p>
-                        </div>
-                    </transition>
-                    <div class="download_container">
-                        <button
-                            class="download"
-                            :class="sum.saccess ? 'downloadable' : 'not_downloadable'"
-                            @click="download_sum(sum.id, sum.sumname)"
-                            :title="sum.saccess ? 'Download' : 'No Access'"
-                        >🡇</button>
-                    </div>
-
-                    <div class="rate_container">
-                        <transition name="show_rating_container">
-                            <div class="rate_input_container" v-if="sum.show_rating&&sum.saccess">
-                                <button
-                                    class="rate_input_button"
-                                    v-for="rating in [1, 2, 3, 4, 5]"
-                                    :value="rating"
-                                    @click="rate(sum.id, rating)"
-                                >☆</button>
-                            </div>
-                        </transition>
-                        <button
-                            class="rate"
-                            :title="sum.saccess ?'Bewerten':'Nicht bewertbar'"
-                            :class="sum.saccess ? 'ratable' : 'not_ratable'"
-                            @click="sum.show_rating = !sum.show_rating"
-                        >★</button>
-                    </div>
-                </label>
-            </div>
-            <div v-else class="no_sums">
-                <h2 class="no_sums_hdln">Bisher hat dieser Creator keine Zusammenfassung hochgeladen</h2>
-            </div>
-        </div>
-    </div>
-</template>
 <script lang="ts">
 import { defineComponent } from 'vue'
 
@@ -188,20 +110,106 @@ export default defineComponent({
     }
 })
 </script>
+<template>
+    <div class="page">
+        <div class="user_detail_panel">
+            <div class="userinfo">
+                <h1 id="username_hdln">{{ userName }}</h1>
+            </div>
+            <div class="sums">
+                <div class="infos" v-if="usersums.length > 0" v-for="sum in usersums">
+                    <input
+                        class="user_sum_checkbox"
+                        type="checkbox"
+                        :name="sum.id.toString()"
+                        :id="sum.id.toString()"
+                        :value="sum.id"
+                        v-model="checked_sums"
+                    />
+                    <label :for="sum.id.toString()" class="user_sum">
+                        <div class="user_sum_info">
+                            <p>{{ sum.subject_name }}</p>
+                            <div
+                                :class="'rat' + sum.rating.toString() + ' sumrating'"
+                                :title="sum.ratingamount + ' Bewertungen'"
+                            >
+                                <div class="rating">{{ sum.rating }}</div>
+                                <svg
+                                    id="rating_svg"
+                                    :style="'--rating_num:' + sum.rating_num.toString() + ';'"
+                                >
+                                    <circle cx="1rem" cy="1rem" r="1rem" />
+                                    <circle cx="1rem" cy="1rem" r="1rem" />
+                                </svg>
+                            </div>
+                            <p>{{ sum.sumname }}</p>
+                            <p>{{ formatDate(sum.Date) }} - {{ formatTime(sum.Date) }}</p>
+                        </div>
+                        <transition name="show_detail_info">
+                            <div class="detail_info" v-if="checked_sums.includes(sum.id)">
+                                <p>Schule: {{ sum.school_name }}</p>
+                                <p>Ort: {{ sum.location_name }}</p>
+                                <p>Klassenstufe {{ sum.subject_year }}</p>
+                            </div>
+                        </transition>
+                        <div class="download_container">
+                            <button
+                                class="download"
+                                :class="sum.saccess ? 'downloadable' : 'not_downloadable'"
+                                @click="download_sum(sum.id, sum.sumname)"
+                                :title="sum.saccess ? 'Download' : 'No Access'"
+                            >🡇</button>
+                        </div>
+
+                        <div class="rate_container">
+                            <transition name="show_rating_container">
+                                <div
+                                    class="rate_input_container"
+                                    v-if="sum.show_rating && sum.saccess"
+                                >
+                                    <button
+                                        class="rate_input_button"
+                                        v-for="rating in [1, 2, 3, 4, 5]"
+                                        :value="rating"
+                                        @click="rate(sum.id, rating)"
+                                    >☆</button>
+                                </div>
+                            </transition>
+                            <button
+                                class="rate"
+                                :title="sum.saccess ? 'Bewerten' : 'Nicht bewertbar'"
+                                :class="sum.saccess ? 'ratable' : 'not_ratable'"
+                                @click="sum.show_rating = !sum.show_rating"
+                            >★</button>
+                        </div>
+                    </label>
+                </div>
+                <div v-else class="no_sums">
+                    <h2
+                        class="no_sums_hdln"
+                    >Bisher hat dieser Creator keine Zusammenfassung hochgeladen</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
 <style scoped>
-#username_hdln {
-    color: var(--base);
-}
 .user_detail_panel {
     --download_button_width: 75px;
     position: relative;
-    margin-top: var(--top_margin);
+    /* margin-top: var(--top_margin); */
     width: 100%;
-    min-height: calc(100vh - var(--top_margin));
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
+    height: calc(100vh - var(--top_margin));
+    display: grid;
+    grid-template-rows: 5rem calc(100% - 5rem);
     align-items: center;
+    overflow: auto;
+}
+.sums{
+    height: 100%;
+    overflow: auto;
+    padding: 3rem 0 2rem 0;
+    box-shadow: inset 0 15px 15px -15px var(--box_shadows);
 }
 .infos {
     position: relative;
@@ -212,16 +220,20 @@ export default defineComponent({
     align-items: center;
 }
 .userinfo {
-    position: fixed;
-    top: calc(var(--top_margin) + 3rem);
-    width: 30vw;
-    left: 35vw;
+    position: relative;
+    width: 100%;
+    height: 4rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 5px;
+    border-radius: 0 0 5px 5px;
     overflow: hidden;
     background: var(--anti_base);
+    z-index: 5;
+}
+.userinfo * {
+    color: var(--base);
+    padding: 1rem;
 }
 .profile_image {
     width: 150px;
@@ -340,7 +352,7 @@ export default defineComponent({
     transform: translate(0.15rem, -0.15rem) rotateZ(-90deg);
     stroke-dasharray: 6.25rem;
     stroke-dashoffset: 6.25rem;
-    transition: transform .3s, stroke-dashoffset .3s;
+    transition: transform 0.3s, stroke-dashoffset 0.3s;
 }
 #rating_svg circle:nth-child(1) {
     stroke: #f3f3f3;
@@ -384,11 +396,11 @@ export default defineComponent({
     color: var(--base);
     font-size: 1.75rem;
 }
-.rate{
+.rate {
     border-radius: 0 5px 5px 0;
 }
-.download{
-    border-radius:5px 0 0 5px;
+.download {
+    border-radius: 5px 0 0 5px;
 }
 .rate_input_container {
     --bubble_distance: 0.6rem;
@@ -431,22 +443,24 @@ export default defineComponent({
     align-content: center;
     transition: all 1s, background 0.5s, color 0.5s;
 }
-.rate_input_button:last-child{
+.rate_input_button:last-child {
     border-radius: 0 4px 4px 0;
 }
-.rate_input_button:first-child{
-    border-radius: 4px 0 0  4px;
+.rate_input_button:first-child {
+    border-radius: 4px 0 0 4px;
 }
 .rate_input_button:hover {
     cursor: pointer;
     color: var(--anti_base);
     background: var(--base);
 }
-.download.downloadable:hover, .rate.ratable:hover{
+.download.downloadable:hover,
+.rate.ratable:hover {
     cursor: pointer;
     background: rgba(0, 189, 0, 0.534);
 }
-.download.not_downloadable:hover,.rate.not_ratable:hover {
+.download.not_downloadable:hover,
+.rate.not_ratable:hover {
     cursor: pointer;
     background: rgba(68, 68, 68, 0.534);
 }
@@ -455,13 +469,34 @@ export default defineComponent({
     transform: translateY(var(--bubble_distance));
 }
 
-.show_rating_container-leave-to{
+.show_rating_container-leave-to {
     opacity: 0;
-    transform: translateY(calc(-1*var(--bubble_distance)));
+    transform: translateY(calc(-1 * var(--bubble_distance)));
 }
 
 .show_rating_container-leave-active,
 .show_rating_container-enter-active {
-    transition: opacity 0.4s, transform .3s;
+    transition: opacity 0.4s, transform 0.3s;
+}
+
+@media (max-width: 750px){
+    .user_detail_panel{
+        height: 100vh;
+    }
+    .user_sum{
+        --initial-height: 10rem;
+    }
+    .user_sum_info,.detail_info{
+        flex-direction: column;
+        justify-content: center;
+        font-size: 1.4rem;
+        align-items: center;
+        font-weight:500;
+    }
+    .user_sum_info *,.detail_info *{
+        text-align: center;
+        margin: .2rem;
+    }
+
 }
 </style>

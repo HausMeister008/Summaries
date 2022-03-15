@@ -12,7 +12,7 @@ const lgn_or_rgstr = ref(true)
             <span>Register</span>
             <span>Login</span>
         </label>
-        <transition :name="lgn_or_rgstr?'to_login': 'to_register'" mode="out-in">
+        <transition :name="lgn_or_rgstr ? 'to_login' : 'to_register'" mode="out-in">
             <login-form v-if="lgn_or_rgstr"></login-form>
             <register-form v-else></register-form>
         </transition>
@@ -20,14 +20,19 @@ const lgn_or_rgstr = ref(true)
 </template>
 
 <style scoped>
-.page{
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  margin-top: calc(var(--top_margin) * 1.5);
-  position: relative;
-  }
+.page {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    position: relative;
+    margin-top: calc(var(--top_margin) * 1.5);
+}
+@media (max-width: 750px) {
+    .page {
+        margin: auto;
+    }
+}
 #lgn_or_rgstr {
     display: none;
 }
@@ -72,7 +77,7 @@ const lgn_or_rgstr = ref(true)
     left: 0;
     top: 0;
     z-index: -1;
-    transition: transform 0.2s;
+    transition: all 1s, transform 0.2s;
 }
 #lgn_or_rgstr_label span:first-child {
     border-radius: 30px 0 0 30px;
@@ -99,26 +104,26 @@ const lgn_or_rgstr = ref(true)
     color: var(--base);
 }
 .to_login-enter-from {
-  opacity: 0;
-  transform: translateX(-3rem);
+    opacity: 0;
+    transform: translateX(-3rem);
 }
 .to_login-leave-to {
-  opacity: 0;
-  transform: translateX(3rem);
+    opacity: 0;
+    transform: translateX(3rem);
 }
 .to_register-enter-from {
-  opacity: 0;
-  transform: translateX(3rem);
+    opacity: 0;
+    transform: translateX(3rem);
 }
 .to_register-leave-to {
-  opacity: 0;
-  transform: translateX(-3rem);
+    opacity: 0;
+    transform: translateX(-3rem);
 }
 .to_login-leave-active,
 .to_login-enter-active,
 .to_register-leave-active,
 .to_register-enter-active {
-  transition: all  0.3s;
+    transition: all 0.3s;
 }
 </style>
 
@@ -144,6 +149,7 @@ const lgn_or_rgstr = ref(true)
     box-shadow: 0 0 15px var(--box_shadows);
     position: relative;
 }
+
 .loginHeadline {
     color: var(--base);
     margin-bottom: 3rem;
@@ -164,8 +170,7 @@ const lgn_or_rgstr = ref(true)
     border-bottom-color: var(--base);
 }
 .login_group {
-    width: 50%;
-    min-width: 300px;
+    width: max(15rem, 50%);
     position: relative;
     display: flex;
     justify-content: center;
@@ -200,13 +205,13 @@ const lgn_or_rgstr = ref(true)
     margin-top: 2em;
     font-size: 1.2em;
     border-radius: 5px;
-    padding: .5rem 1rem;
+    padding: 0.5rem 1rem;
     font-weight: 600;
     background: transparent;
     box-shadow: 0 0 5px var(--box_shadows);
     border: none;
     color: var(--base);
-    transition: all .2s;
+    transition: all 0.2s;
 }
 .submit_form:hover {
     cursor: pointer;
@@ -266,26 +271,43 @@ const lgn_or_rgstr = ref(true)
     border-radius: 5px;
     box-shadow: 0 0 15px var(--box_shadows_dark);
 }
-.loggedin_link_symbol{
-    transition: all .2s;
+.loggedin_link_symbol {
+    transition: all 0.2s;
 }
 
-.logged_in:hover > .loggedin_link_symbol{
+.logged_in:hover > .loggedin_link_symbol {
     margin-left: 5px;
 }
 
 .lgn_rgstr_conf_fade-enter-from {
-  opacity: 0;
-  transform: scale(0);
+    opacity: 0;
+    transform: scale(0);
 }
 .lgn_rgstr_conf_fade-leave-to {
-  opacity: 0;
-  transform: scale(0);
+    opacity: 0;
+    transform: scale(0);
 }
 .lgn_rgstr_conf_fade-leave-active,
 .lgn_rgstr_conf_fade-enter-active {
-  transition: all  0.4s;
+    transition: all 0.4s;
 }
 
-
+@media (max-width: 750px) {
+    .loginForm {
+        width: max(20rem, 80%);
+        max-width: 100vw;
+    }
+    .submit_form {
+        margin-top: 2em;
+        font-size: 1.5em;
+        border-radius: 5px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        background: transparent;
+        box-shadow: 0 0 5px var(--box_shadows_dark);
+        border: none;
+        color: var(--base);
+        transition: all 0.2s;
+    }
+}
 </style>
