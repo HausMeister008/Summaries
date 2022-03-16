@@ -13,16 +13,30 @@ import { nanoid } from 'nanoid'
 import fs from 'fs'
 import { addData } from "./functions";
 import path from "path";
+// process.env["NODE_CONFIG_DIR"] = __dirname + "/config/";
+// $env:NODE_ENV = 'production' --> cmd line windows
+// export NODE_ENV = production --> cmd line linux/mac
+import config from 'config'
 
+
+interface dbConfig{
+  host: string,
+  port: number,
+  user: string,
+  dbName: string,
+  password: string
+}
+const dbConfig:dbConfig = config.get('Customer.dbConfig')
+console.log(dbConfig)
 
 const pool = new Pool({
-  host: 'localhost',
-  user: 'leongrass',
-  database: 'summaries',
-  password: 'w1rch4tt3npr1v4t',
-  port: 5432,
+  host: dbConfig.host,
+  user: dbConfig.user,
+  database: dbConfig.dbName,
+  password: dbConfig.password,
+  port: dbConfig.port
 })
-
+// pool.query('select * from users').then(result => console.log(result.rows))
 app.use(express.json())  // Hiermit kann Express JSON-Daten einlesen
 
 

@@ -1,0 +1,15 @@
+{
+    "Customer": {
+      "dbConfig": {
+        "host": "somehost",
+        "port": 5432,
+        "user": "someuser",
+        "password": "some_password",
+        "dbName": "some_name"
+      },
+      "credit": {
+        "initialLimit": 100,
+        "initialDays": 1
+      }
+    }
+  }

@@ -25,23 +25,6 @@ create table "creator"(
     foreign key (userID) references users (id) on delete cascade on update cascade
     );
 
-
-create table ratings(
-    id serial primary key not null, 
-    ratedSummary int not null, 
-    rating float not null default 5.0,
-    rating_user int not null,
-    foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade,
-    foreign key (rating_user) references users (id)
-    );
-
-create table saccess(
-    id serial primary key not null,
-    Summary int not null,
-    userID int not null,
-    foreign key (Summary) references summaries (id) on delete cascade on update cascade,
-    foreign key (userID) references users (id) on delete cascade on update cascade
-);
 create table locations(
     plz varchar primary key not null,
     location_name varchar not null
@@ -73,6 +56,31 @@ create table "summaries"(
     foreign key (Creator) references creator (id) on delete cascade on update cascade,
     foreign key (subject_id) references subjects (id) on delete cascade on update cascade
     );
+
+
+create table ratings(
+    id serial primary key not null, 
+    ratedSummary int not null, 
+    rating float not null default 5.0,
+    rating_user int not null,
+    foreign key (ratedSummary) references summaries (id) on delete cascade on update cascade,
+    foreign key (rating_user) references users (id)
+    );
+
+create table saccess(
+    id serial primary key not null,
+    Summary int not null,
+    userID int not null,
+    foreign key (Summary) references summaries (id) on delete cascade on update cascade,
+    foreign key (userID) references users (id) on delete cascade on update cascade
+);
+
+
+
+
+
+
+
 
 insert into users (firstname, lastname,username, pwd) values ('Leon', 'Grass', 'LeonG','');
 insert into users (firstname, lastname,username, pwd) values ('Pirmin', 'Bothur', 'PirminB','');
