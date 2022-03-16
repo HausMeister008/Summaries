@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8",
+    "config": "^3.3.7"
+  }
+}

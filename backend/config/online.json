@@ -1,0 +1,15 @@
+{
+    "Customer": {
+      "dbConfig": {
+        "host": "localhost",
+        "port": 5432,
+        "user": "leongrass",
+        "password": "ändern",
+        "dbName": "summaries"
+      },
+      "credit": {
+        "initialLimit": 100,
+        "initialDays": 1
+      }
+    }
+  }
